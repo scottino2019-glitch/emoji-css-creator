@@ -1,0 +1,6 @@
+{
+  "name": "Buongiorno e Buon Sabato - Pure HTML e CSS",
+  "description": "Disegno artistico vettoriale in puro codice HTML e CSS con tag <style> unificato: emoji personalizzabile con sessioni per scritte e tipografia 3D, occhi, bocca, accessori e oggetti di scena.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
