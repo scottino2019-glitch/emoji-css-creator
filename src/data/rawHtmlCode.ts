@@ -1,6 +1,7 @@
 import { CardTextConfig, AnimationSettings, CardVariantConfig } from '../types';
 import { generateCardCss } from './cssGenerators';
 import { getEyesHtml, getMouthHtml, getAccessoryHtml, getCompanionHtml } from './htmlGenerators';
+import { generateTitleHtml, generateSubtitleHtml, generateDateHtml } from './typographyGenerators';
 
 export function generateStandaloneHtml(
   texts: CardTextConfig = {
@@ -17,7 +18,7 @@ export function generateStandaloneHtml(
     companion: 'coffeeCup',
   }
 ): string {
-  const css = generateCardCss(anim, variants);
+  const css = generateCardCss(anim, variants, texts);
 
   return `<!DOCTYPE html>
 <html lang="it">
@@ -70,42 +71,11 @@ ${css}
   <div class="card-canvas">
     <div class="card-ambient-glow"></div>
 
-    <!-- 1. DATA -->
-    <div class="live-date-row">
-      <div class="live-sparkle s-md sp-tl1"></div>
-      <div class="live-sparkle s-sm sp-tl2"></div>
-      <span class="live-date-text">${texts.date}</span>
-      <div class="live-sparkle s-md sp-tr1"></div>
-      <div class="live-sparkle s-sm sp-tr2"></div>
-    </div>
+${generateDateHtml(texts)}
 
-    <!-- 2. BUONGIORNO 3D -->
-    <div class="live-buongiorno-wrapper">
-      <div class="live-heart-3d h-top-l"><div class="live-heart-specular"></div></div>
-      
-      <span class="live-letter-3d let-b" data-letter="B">B</span>
-      <span class="live-letter-3d let-u" data-letter="U">U</span>
-      <span class="live-letter-3d let-o1" data-letter="O">O</span>
-      <span class="live-letter-3d let-n1" data-letter="N">N</span>
-      <span class="live-letter-3d let-g" data-letter="G">G</span>
-      <div class="live-let-i-container">
-        <div class="live-heart-on-i"></div>
-        <span class="live-let-i-stem">I</span>
-      </div>
-      <span class="live-letter-3d let-o2" data-letter="O">O</span>
-      <span class="live-letter-3d let-r" data-letter="R">R</span>
-      <span class="live-letter-3d let-n2" data-letter="N">N</span>
-      <span class="live-letter-3d let-o3" data-letter="O">O</span>
+${generateTitleHtml(texts)}
 
-      <div class="live-heart-3d h-top-r"><div class="live-heart-specular"></div></div>
-    </div>
-
-    <!-- 3. BUON SABATO -->
-    <div class="live-subtitle-wrapper">
-      <div class="live-sparkle s-sm sp-ml1"></div>
-      <h2 class="live-sabato-text">${texts.subGreeting}</h2>
-      <div class="live-sparkle s-sm sp-bc"></div>
-    </div>
+${generateSubtitleHtml(texts)}
 
     <!-- CUORI FLUTTUANTI NEL CENTRO -->
     <div class="live-heart-3d h-mid-l"><div class="live-heart-specular"></div></div>

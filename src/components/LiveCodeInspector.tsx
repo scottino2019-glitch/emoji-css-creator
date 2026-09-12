@@ -15,6 +15,7 @@ import { CardTextConfig, AnimationSettings, CardVariantConfig } from '../types';
 import { generateStandaloneHtml } from '../data/rawHtmlCode';
 import { generateCardCss } from '../data/cssGenerators';
 import { getEyesHtml, getMouthHtml, getAccessoryHtml, getCompanionHtml } from '../data/htmlGenerators';
+import { generateTitleHtml, generateSubtitleHtml, generateDateHtml } from '../data/typographyGenerators';
 import { CardArt } from './CardArt';
 
 interface LiveCodeInspectorProps {
@@ -39,48 +40,17 @@ export const LiveCodeInspector: React.FC<LiveCodeInspectorProps> = ({
   const [searchTerm, setSearchTerm] = useState('');
 
   const fullHtml = generateStandaloneHtml(texts, anim, variants);
-  const pureCss = generateCardCss(anim, variants);
+  const pureCss = generateCardCss(anim, variants, texts);
   
   const bodyHtml = `<!-- PALCO PRINCIPALE CARTELLINA -->
 <div class="card-canvas">
   <div class="card-ambient-glow"></div>
 
-  <!-- 1. DATA PERSONALIZZATA -->
-  <div class="live-date-row">
-    <div class="live-sparkle s-md sp-tl1"></div>
-    <div class="live-sparkle s-sm sp-tl2"></div>
-    <span class="live-date-text">${texts.date}</span>
-    <div class="live-sparkle s-md sp-tr1"></div>
-    <div class="live-sparkle s-sm sp-tr2"></div>
-  </div>
+${generateDateHtml(texts)}
 
-  <!-- 2. TITOLO 3D BUONGIORNO CON CUORE SULLA I -->
-  <div class="live-buongiorno-wrapper">
-    <div class="live-heart-3d h-top-l"><div class="live-heart-specular"></div></div>
-    
-    <span class="live-letter-3d let-b" data-letter="B">B</span>
-    <span class="live-letter-3d let-u" data-letter="U">U</span>
-    <span class="live-letter-3d let-o1" data-letter="O">O</span>
-    <span class="live-letter-3d let-n1" data-letter="N">N</span>
-    <span class="live-letter-3d let-g" data-letter="G">G</span>
-    <div class="live-let-i-container">
-      <div class="live-heart-on-i"></div>
-      <span class="live-let-i-stem">I</span>
-    </div>
-    <span class="live-letter-3d let-o2" data-letter="O">O</span>
-    <span class="live-letter-3d let-r" data-letter="R">R</span>
-    <span class="live-letter-3d let-n2" data-letter="N">N</span>
-    <span class="live-letter-3d let-o3" data-letter="O">O</span>
+${generateTitleHtml(texts)}
 
-    <div class="live-heart-3d h-top-r"><div class="live-heart-specular"></div></div>
-  </div>
-
-  <!-- 3. SOTTOTITOLO BUON SABATO -->
-  <div class="live-subtitle-wrapper">
-    <div class="live-sparkle s-sm sp-ml1"></div>
-    <h2 class="live-sabato-text">${texts.subGreeting}</h2>
-    <div class="live-sparkle s-sm sp-bc"></div>
-  </div>
+${generateSubtitleHtml(texts)}
 
   <!-- 4. PALCO DEI PERSONAGGI VETTORIALI -->
   <div class="live-stage-characters">

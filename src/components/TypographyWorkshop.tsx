@@ -1,17 +1,34 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   CardTextConfig,
   AnimationSettings,
+  TitleTheme,
+  TitleDepth,
+  TitleDot,
+  TitleAnim,
+  SubtitleGradient,
+  SubtitleEffect,
+  DateStyle,
+  SignatureFont,
+  SignatureColor,
 } from '../types';
+import {
+  generateTitleHtml,
+  generateSubtitleHtml,
+  generateDateHtml,
+  generateSignatureHtml,
+  generateTitleCss,
+  generateSubtitleCss,
+  generateDateCss,
+  generateSignatureCss,
+  generateTypographyCss,
+} from '../data/typographyGenerators';
 import {
   Type,
   Sparkles,
   Copy,
   Check,
   Code2,
-  Layers,
-  FileCode,
-  Palette,
   Heart,
   Sliders,
   ChevronDown,
@@ -19,8 +36,7 @@ import {
   Info,
   CheckCircle2,
   Zap,
-  RotateCcw,
-  LayoutGrid
+  LayoutGrid,
 } from 'lucide-react';
 
 interface TypographyWorkshopProps {
@@ -32,30 +48,6 @@ interface TypographyWorkshopProps {
 }
 
 type TypographySection = 'buongiorno' | 'sabato' | 'data' | 'firma' | 'all';
-
-// Preset temi colore per il titolo BUONGIORNO
-type BuongiornoColorTheme = 'multicolor' | 'liquidGold' | 'candyPink' | 'cyberNeon' | 'oceanBreeze';
-
-// Profondità 3D
-type Depth3D = 'flat' | 'light' | 'standard' | 'mega';
-
-// Puntino sulla 'I'
-type DotStyle = 'heart' | 'star' | 'circle' | 'crown';
-
-// Animazione lettere
-type LetterAnimation = 'bounce' | 'float' | 'none';
-
-// Preset gradiente BUON SABATO
-type SabatoGradient = 'rainbow' | 'sunset' | 'glitzPink' | 'aurora' | 'goldSolar';
-
-// Effetto contorno BUON SABATO
-type SabatoOutline = 'crispWhite' | 'neonGlow' | 'dark3D' | 'subtleShadow';
-
-// Stile data
-type DateStyle = 'carved' | 'goldFoil' | 'slateModern' | 'roseGold';
-
-// Font firma
-type SignatureFont = 'Great Vibes' | 'Pacifico' | 'Sacramento' | 'Dancing Script';
 
 export const TypographyWorkshop: React.FC<TypographyWorkshopProps> = ({
   texts,
@@ -70,30 +62,58 @@ export const TypographyWorkshop: React.FC<TypographyWorkshopProps> = ({
   const [isExplainerOpen, setIsExplainerOpen] = useState(true);
 
   // --- STATI SELETTORI PER "BUONGIORNO" ---
-  const [bgTheme, setBgTheme] = useState<BuongiornoColorTheme>('multicolor');
-  const [bgDepth, setBgDepth] = useState<Depth3D>('standard');
-  const [bgSpecular, setBgSpecular] = useState<boolean>(true);
-  const [bgDot, setBgDot] = useState<DotStyle>('heart');
-  const [bgAnim, setBgAnim] = useState<LetterAnimation>('bounce');
+  const [bgTheme, setBgTheme] = useState<TitleTheme>(texts.titleTheme ?? 'multicolor');
+  const [bgDepth, setBgDepth] = useState<TitleDepth>(texts.titleDepth ?? 'standard');
+  const [bgSpecular, setBgSpecular] = useState<boolean>(texts.titleSpecular !== false);
+  const [bgDot, setBgDot] = useState<TitleDot>(texts.titleDot === 'star' ? 'star' : 'heart');
+  const [bgAnim, setBgAnim] = useState<TitleAnim>(texts.titleAnim ?? 'bounce');
   const [customBgText, setCustomBgText] = useState<string>(texts.buongiorno);
 
   // --- STATI SELETTORI PER "BUON SABATO" ---
-  const [sabatoGrad, setSabatoGrad] = useState<SabatoGradient>('rainbow');
-  const [sabatoOut, setSabatoOut] = useState<SabatoOutline>('crispWhite');
-  const [sabatoAnim, setSabatoAnim] = useState<boolean>(true);
+  const [sabatoGrad, setSabatoGrad] = useState<SubtitleGradient>(texts.subtitleGradient ?? 'rainbow');
+  const [sabatoOut, setSabatoOut] = useState<SubtitleEffect>(texts.subtitleEffect ?? 'glow-white');
+  const [sabatoAnim, setSabatoAnim] = useState<boolean>(texts.subtitleAnim !== false);
   const [customSabatoText, setCustomSabatoText] = useState<string>(texts.subGreeting);
 
   // --- STATI SELETTORI PER DATA ---
-  const [dateSty, setDateSty] = useState<DateStyle>('carved');
-  const [dateSpacing, setDateSpacing] = useState<'normal' | 'wide' | 'ultra'>('wide');
-  const [dateSparkles, setDateSparkles] = useState<boolean>(true);
+  const [dateSty, setDateSty] = useState<DateStyle>(texts.dateStyle ?? 'stone');
+  const [dateSparkles, setDateSparkles] = useState<boolean>(texts.dateStars !== false);
   const [customDateText, setCustomDateText] = useState<string>(texts.date);
 
   // --- STATI SELETTORI PER FIRMA ---
-  const [sigFont, setSigFont] = useState<SignatureFont>('Great Vibes');
-  const [sigColor, setSigColor] = useState<'navy' | 'ruby' | 'amberGold' | 'choco'>('navy');
-  const [sigRelief, setSigRelief] = useState<boolean>(true);
+  const [sigFont, setSigFont] = useState<SignatureFont>(texts.sigFont ?? 'greatvibes');
+  const [sigColor, setSigColor] = useState<SignatureColor>(texts.sigColor ?? 'night');
+  const [sigRelief, setSigRelief] = useState<boolean>(texts.sigEmboss !== false);
   const [customSigText, setCustomSigText] = useState<string>(texts.signature);
+
+  // CONFIGURAZIONE UNIFICATA: UNICA FONTE DI VERITÀ
+  const activeConfig: CardTextConfig = useMemo(() => ({
+    ...texts,
+    date: customDateText,
+    buongiorno: customBgText,
+    subGreeting: customSabatoText,
+    signature: customSigText,
+    titleTheme: bgTheme,
+    titleDepth: bgDepth,
+    titleSpecular: bgSpecular,
+    titleDot: bgDot,
+    titleAnim: bgAnim,
+    subtitleGradient: sabatoGrad,
+    subtitleEffect: sabatoOut,
+    subtitleAnim: sabatoAnim,
+    dateStyle: dateSty,
+    dateStars: dateSparkles,
+    sigFont: sigFont,
+    sigColor: sigColor,
+    sigEmboss: sigRelief,
+  }), [
+    texts,
+    customDateText, customBgText, customSabatoText, customSigText,
+    bgTheme, bgDepth, bgSpecular, bgDot, bgAnim,
+    sabatoGrad, sabatoOut, sabatoAnim,
+    dateSty, dateSparkles,
+    sigFont, sigColor, sigRelief,
+  ]);
 
   const handleCopy = (key: string, text: string) => {
     navigator.clipboard.writeText(text);
@@ -102,317 +122,33 @@ export const TypographyWorkshop: React.FC<TypographyWorkshopProps> = ({
   };
 
   const handleApplyToCard = () => {
-    onTextsChange({
-      date: customDateText,
-      buongiorno: customBgText,
-      subGreeting: customSabatoText,
-      signature: customSigText,
-    });
+    onTextsChange(activeConfig);
     setCopiedKey('applied');
     setTimeout(() => setCopiedKey(null), 2500);
   };
 
-  // --- GENERAZIONE CODICE CSS DINAMICO PER BUONGIORNO ---
-  const getBuongiornoShadow = () => {
-    if (bgDepth === 'flat') return 'none';
-    if (bgDepth === 'light') {
-      return '0 1px 0 rgba(0,0,0,0.2), 0 2px 4px rgba(0,0,0,0.25)';
-    }
-    if (bgDepth === 'mega') {
-      return '0 1px 0 #fff, 0 2px 0 currentColor, 0 3px 0 currentColor, 0 4px 0 rgba(0,0,0,0.5), 0 5px 0 rgba(0,0,0,0.6), 0 6px 0 rgba(0,0,0,0.7), 0 7px 0 rgba(0,0,0,0.8), 0 8px 16px rgba(0,0,0,0.6)';
-    }
-    // standard 6 layers
-    return '0 1px 0 #ffffff, 0 2px 0 rgba(0,0,0,0.15), 0 3px 0 currentColor, 0 4px 0 rgba(0,0,0,0.4), 0 5px 0 rgba(0,0,0,0.5), 0 6px 10px rgba(0,0,0,0.45), 2px 8px 14px rgba(0,0,0,0.25)';
-  };
+  // GENERATORI CONDIVISI RIGOROSAMENTE IDENTICI A QUELLI DELLA CARD
+  const titleCssCode = generateTitleCss(activeConfig, anim);
+  const titleHtmlCode = generateTitleHtml(activeConfig);
 
-  const getThemeColorClass = (index: number) => {
-    if (bgTheme === 'liquidGold') {
-      return 'from-amber-200 via-amber-400 to-amber-600 text-amber-500';
-    }
-    if (bgTheme === 'candyPink') {
-      return 'from-pink-200 via-rose-400 to-rose-600 text-rose-500';
-    }
-    if (bgTheme === 'cyberNeon') {
-      return 'from-cyan-300 via-emerald-400 to-teal-500 text-cyan-400';
-    }
-    if (bgTheme === 'oceanBreeze') {
-      return 'from-sky-200 via-blue-400 to-indigo-600 text-blue-500';
-    }
-    // multicolor
-    const colors = [
-      'text-[#0d6efd]', // B
-      'text-[#dc2626]', // U
-      'text-[#ea580c]', // O
-      'text-[#eab308]', // N
-      'text-[#16a34a]', // G
-      'text-[#eab308]', // I
-      'text-[#65a30d]', // O
-      'text-[#0284c7]', // R
-      'text-[#9333ea]', // N
-      'text-[#059669]', // O
-    ];
-    return colors[index % colors.length];
-  };
+  const subtitleCssCode = generateSubtitleCss(activeConfig, anim);
+  const subtitleHtmlCode = generateSubtitleHtml(activeConfig);
 
-  // Codice CSS per BUONGIORNO
-  const buongiornoCssCode = `/* ==========================================================================
-   TECNICA ESTRUSIONE 3D + SPECULARITÀ PER IL TITOLO "BUONGIORNO"
-   Spiegazione: Ogni lettera ha un'estrusione a ${bgDepth === 'flat' ? '0 (piatta)' : bgDepth === 'light' ? '2 strati' : bgDepth === 'standard' ? '6 strati' : '8 strati'}
-   e uno strato speculare superiore per simulare la riflessione della luce.
-   ========================================================================== */
+  const dateCssCode = generateDateCss(activeConfig);
+  const dateHtmlCode = generateDateHtml(activeConfig);
 
-/* Contenitore riga del titolo */
-.live-buongiorno-wrapper {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 1.5px;
-  transform-style: preserve-3d;
-}
+  const signatureCssCode = generateSignatureCss(activeConfig);
+  const signatureHtmlCode = generateSignatureHtml(activeConfig);
 
-/* Lettera singola 3D con font display corposo */
-.live-letter-3d {
-  position: relative;
-  display: inline-block;
-  font-family: 'Lilita One', 'Fredoka', cursive, sans-serif;
-  font-size: 56px;
-  font-weight: 900;
-  line-height: 1;
-  text-align: center;
-  ${bgAnim === 'bounce' ? 'animation: liveLetterBounce 3.6s ease-in-out infinite;' : bgAnim === 'float' ? 'animation: liveFloatGentle 3s ease-in-out infinite;' : '/* Animazione disattivata */'}
-  /* Estrusione 3D tramite strati multipli sovrapposti di text-shadow */
-  text-shadow: ${getBuongiornoShadow()};
-  transition: transform 0.2s ease;
-}
+  const allTypographyCss = generateTypographyCss(activeConfig, anim);
+  const allTypographyHtml = `${dateHtmlCode}\n\n${titleHtmlCode}\n\n${subtitleHtmlCode}\n\n${signatureHtmlCode}`;
 
-.live-letter-3d:hover {
-  transform: translateY(-6px) scale(1.08);
-}
+  let currentCssSnippet = titleCssCode;
+  let currentHtmlSnippet = titleHtmlCode;
 
-${bgSpecular ? `/* Patina speculare lucida sulla metà superiore della lettera */
-.live-letter-3d::after {
-  content: attr(data-letter);
-  position: absolute;
-  top: 0;
-  left: 0;
-  z-index: 2;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.3) 30%, transparent 60%);
-  pointer-events: none;
-}` : '/* Patina speculare disattivata */'}
-
-${bgDot === 'heart' ? `/* IL PUNTINO SULLA 'I' TRASFORMATO IN CUORICINO 3D */
-.live-let-i-container {
-  position: relative;
-  display: inline-flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-end;
-  width: 22px;
-  height: 60px;
-}
-
-.live-heart-on-i {
-  position: absolute;
-  top: -2px;
-  width: 16px;
-  height: 16px;
-  background: radial-gradient(circle at 35% 35%, #ffffff 0%, #ff3b5c 30%, #e60026 60%, #990014 100%);
-  transform: rotate(-45deg);
-  border-radius: 2px;
-  box-shadow: 0 2px 6px rgba(180, 0, 20, 0.5);
-  animation: liveHeartPulse 1.8s ease-in-out infinite;
-}
-.live-heart-on-i::before, .live-heart-on-i::after {
-  content: '';
-  position: absolute;
-  width: 16px;
-  height: 16px;
-  background: inherit;
-  border-radius: 50%;
-  box-shadow: inherit;
-}
-.live-heart-on-i::before { top: -8px; left: 0; }
-.live-heart-on-i::after { top: 0; right: -8px; }` : `/* Puntino sulla I configurato come: ${bgDot} */`}
-
-@keyframes liveLetterBounce {
-  0%, 100% { transform: translateY(0) rotate(0deg); }
-  50% { transform: translateY(-4px) rotate(1deg); }
-}
-@keyframes liveHeartPulse {
-  0%, 100% { transform: rotate(-45deg) scale(1); }
-  50% { transform: rotate(-45deg) scale(1.22); }
-}`;
-
-  const buongiornoHtmlCode = `<!-- STRUTTURA HTML DEL TITOLO 3D CON ATTRIBUTO data-letter PER IL RIFLESSO -->
-<div class="live-buongiorno-wrapper">
-  <!-- Cuori decorativi 3D ai lati -->
-  <div class="live-heart-3d h-top-l"><div class="live-heart-specular"></div></div>
-
-  <!-- Lettere singole con data-letter -->
-  <span class="live-letter-3d let-b" data-letter="B">B</span>
-  <span class="live-letter-3d let-u" data-letter="U">U</span>
-  <span class="live-letter-3d let-o1" data-letter="O">O</span>
-  <span class="live-letter-3d let-n1" data-letter="N">N</span>
-  <span class="live-letter-3d let-g" data-letter="G">G</span>
-  
-  <!-- Lettera I con cuoricino sopra l'asta -->
-  <div class="live-let-i-container">
-    <div class="live-heart-on-i"></div>
-    <span class="live-let-i-stem">I</span>
-  </div>
-  
-  <span class="live-letter-3d let-o2" data-letter="O">O</span>
-  <span class="live-letter-3d let-r" data-letter="R">R</span>
-  <span class="live-letter-3d let-n2" data-letter="N">N</span>
-  <span class="live-letter-3d let-o3" data-letter="O">O</span>
-
-  <div class="live-heart-3d h-top-r"><div class="live-heart-specular"></div></div>
-</div>`;
-
-  // --- GENERAZIONE CODICE CSS PER BUON SABATO ---
-  const getSabatoGradientCss = () => {
-    if (sabatoGrad === 'sunset') {
-      return 'linear-gradient(90deg, #f97316 0%, #facc15 30%, #ec4899 70%, #f97316 100%)';
-    }
-    if (sabatoGrad === 'glitzPink') {
-      return 'linear-gradient(90deg, #f472b6 0%, #ec4899 35%, #c084fc 70%, #f472b6 100%)';
-    }
-    if (sabatoGrad === 'aurora') {
-      return 'linear-gradient(90deg, #34d399 0%, #38bdf8 40%, #818cf8 75%, #34d399 100%)';
-    }
-    if (sabatoGrad === 'goldSolar') {
-      return 'linear-gradient(90deg, #fbbf24 0%, #f59e0b 35%, #fef08a 70%, #fbbf24 100%)';
-    }
-    // rainbow
-    return 'linear-gradient(90deg, #ff1744 0%, #ff6d00 18%, #ffd600 36%, #00e676 54%, #00b0ff 72%, #d500f9 90%, #ff1744 100%)';
-  };
-
-  const getSabatoFilterCss = () => {
-    if (sabatoOut === 'neonGlow') {
-      return 'drop-shadow(0 0 4px #ff3b5c) drop-shadow(0 0 10px #f59e0b) drop-shadow(0 2px 4px rgba(0,0,0,0.6))';
-    }
-    if (sabatoOut === 'dark3D') {
-      return 'drop-shadow(0 2px 0 #152542) drop-shadow(0 3px 0 #0f1c32) drop-shadow(0 5px 8px rgba(0, 0, 0, 0.45))';
-    }
-    if (sabatoOut === 'subtleShadow') {
-      return 'drop-shadow(0 4px 8px rgba(0, 0, 0, 0.35))';
-    }
-    // crispWhite + dark
-    return 'drop-shadow(0 0 1px #ffffff) drop-shadow(0 0 2px #ffffff) drop-shadow(0 2px 0 #152542) drop-shadow(0 3px 0 #0f1c32) drop-shadow(0 5px 8px rgba(0, 0, 0, 0.35))';
-  };
-
-  const sabatoCssCode = `/* ==========================================================================
-   TECNICA GRADIENTE ARCOBALENO ANIMATO + MULTI DROP-SHADOW
-   Spiegazione: background-clip: text ritaglia il gradiente continuo;
-   background-size: 200% permette al keyframe di farlo scorrere all'infinito;
-   il filter con drop-shadow multipli crea il bordo bianco e l'ombra 3D.
-   ========================================================================== */
-
-.live-sabato-text {
-  font-family: 'Lilita One', 'Fredoka', cursive, sans-serif;
-  font-size: 42px;
-  font-weight: 900;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  
-  /* 1. Gradiente a 7 fermate ritagliato sul testo */
-  background: ${getSabatoGradientCss()};
-  background-size: 200% auto;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  
-  /* 2. Animazione dello scorrimento del colore */
-  ${sabatoAnim ? 'animation: liveRainbowShift 8s linear infinite;' : '/* Animazione in pausa */'}
-  
-  /* 3. Bordo netto protettivo e profondità 3D con filtri sovrapposti */
-  filter: 
-    ${getSabatoFilterCss().split(') ').join(')\n    ')};
-}
-
-@keyframes liveRainbowShift {
-  0% { background-position: 0% 50%; }
-  100% { background-position: 200% 50%; }
-}`;
-
-  const sabatoHtmlCode = `<!-- SOTTOTITOLO CON GRADIENTE DINAMICO E STELLINE -->
-<div class="live-subtitle-wrapper">
-  <div class="live-sparkle s-sm sp-ml1"></div>
-  <h2 class="live-sabato-text">${customSabatoText}</h2>
-  <div class="live-sparkle s-sm sp-bc"></div>
-</div>`;
-
-  // --- GENERAZIONE CODICE CSS PER DATA ---
-  const getDateShadowCss = () => {
-    if (dateSty === 'goldFoil') {
-      return '0 1px 0 #fef08a, 0 2px 0 #ca8a04, 0 3px 6px rgba(161, 98, 7, 0.4)';
-    }
-    if (dateSty === 'slateModern') {
-      return '0 1px 2px rgba(0, 0, 0, 0.3), 0 2px 4px rgba(0, 0, 0, 0.2)';
-    }
-    if (dateSty === 'roseGold') {
-      return '0 1px 0 #ffe4e6, 0 2px 0 #f43f5e, 0 3px 6px rgba(225, 29, 72, 0.3)';
-    }
-    // carved
-    return '0 1px 0 #ffffff, 0 -1px 0 rgba(0, 0, 0, 0.2), 1px 2px 3px rgba(0, 0, 0, 0.25), 0 4px 10px rgba(26, 37, 54, 0.15)';
-  };
-
-  const dateCssCode = `/* ==========================================================================
-   TECNICA BASSORILIEVO SCOLPITO PER LA DATA
-   Spiegazione: Doppia ombra contrapposta (luce in alto con bianco solido,
-   ombra in basso con nero semitrasparente) per simulare l'incisione lapidea.
-   ========================================================================== */
-
-.live-date-text {
-  font-family: 'Cinzel', 'Playfair Display', serif;
-  font-size: 34px;
-  font-weight: 900;
-  letter-spacing: ${dateSpacing === 'normal' ? '0.04em' : dateSpacing === 'wide' ? '0.08em' : '0.16em'};
-  color: ${dateSty === 'goldFoil' ? '#b45309' : dateSty === 'roseGold' ? '#9f1239' : '#1a2536'};
-  text-transform: uppercase;
-  
-  /* Doppio riflesso: bordo superiore chiaro + ombra sottostante scura */
-  text-shadow: 
-    ${getDateShadowCss().split(', ').join(',\n    ')};
-}`;
-
-  const dateHtmlCode = `<!-- RIGA DATA CON STELLINE VETTORIALI COORDINATE -->
-<div class="live-date-row">
-  ${dateSparkles ? `<div class="live-sparkle s-md sp-tl1"></div>
-  <div class="live-sparkle s-sm sp-tl2"></div>` : ''}
-  <span class="live-date-text">${customDateText}</span>
-  ${dateSparkles ? `<div class="live-sparkle s-md sp-tr1"></div>
-  <div class="live-sparkle s-sm sp-tr2"></div>` : ''}
-</div>`;
-
-  // --- GENERAZIONE CODICE CSS PER FIRMA ---
-  const signatureCssCode = `/* ==========================================================================
-   TECNICA CORSIVO CALLIGRAFICO MORBIDO 3D
-   Spiegazione: Font elegante con accento di luce per dare un tocco
-   manuale intimo alla cartolina.
-   ========================================================================== */
-
-.live-my-angel {
-  font-family: '${sigFont}', cursive;
-  font-size: 40px;
-  font-weight: 700;
-  color: ${sigColor === 'ruby' ? '#991b1b' : sigColor === 'amberGold' ? '#b45309' : sigColor === 'choco' ? '#3d1400' : '#1a2536'};
-  ${sigRelief ? `text-shadow: 0 1px 0 #ffffff, 1px 2px 3px rgba(0, 0, 0, 0.2);` : 'text-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);'}
-}`;
-
-  const signatureHtmlCode = `<!-- FIRMA CALLIGRAFICA 3D IN BASSO A SINISTRA -->
-<div class="live-footer-row">
-  <div class="live-sparkle s-md sp-bl"></div>
-  <span class="live-my-angel">${customSigText}</span>
-</div>`;
-
-  // Seleziona il codice da mostrare in base alla sezione
-  let currentCssSnippet = buongiornoCssCode;
-  let currentHtmlSnippet = buongiornoHtmlCode;
   if (activeSection === 'sabato') {
-    currentCssSnippet = sabatoCssCode;
-    currentHtmlSnippet = sabatoHtmlCode;
+    currentCssSnippet = subtitleCssCode;
+    currentHtmlSnippet = subtitleHtmlCode;
   } else if (activeSection === 'data') {
     currentCssSnippet = dateCssCode;
     currentHtmlSnippet = dateHtmlCode;
@@ -420,35 +156,37 @@ ${bgDot === 'heart' ? `/* IL PUNTINO SULLA 'I' TRASFORMATO IN CUORICINO 3D */
     currentCssSnippet = signatureCssCode;
     currentHtmlSnippet = signatureHtmlCode;
   } else if (activeSection === 'all') {
-    currentCssSnippet = `/* TUTTI GLI STILI TIPOGRAFICI DELLA CARTOLINA */\n\n${dateCssCode}\n\n${buongiornoCssCode}\n\n${sabatoCssCode}\n\n${signatureCssCode}`;
-    currentHtmlSnippet = `<!-- STRUTTURA TIPOGRAFICA COMPLETA -->\n${dateHtmlCode}\n\n${buongiornoHtmlCode}\n\n${sabatoHtmlCode}\n\n${signatureHtmlCode}`;
+    currentCssSnippet = allTypographyCss;
+    currentHtmlSnippet = `<!-- STRUTTURA TIPOGRAFICA COMPLETA -->\n${allTypographyHtml}`;
   }
 
-  const activeSnippet = codeTab === 'css' 
-    ? currentCssSnippet 
-    : codeTab === 'html' 
-    ? currentHtmlSnippet 
+  const activeSnippet = codeTab === 'css'
+    ? currentCssSnippet
+    : codeTab === 'html'
+    ? currentHtmlSnippet
     : `<style>\n${currentCssSnippet}\n</style>\n\n${currentHtmlSnippet}`;
 
   return (
     <div className="w-full max-w-6xl mx-auto flex flex-col gap-6">
-      
+      {/* INIEZIONE DELLO STYLE TAG REALE DEL WORKSHOP: IL PREVIEW USA ESATTAMENTE IL CSS GENERATO */}
+      <style>{allTypographyCss}</style>
+
       {/* HEADER SESSIONE SCRITTE */}
       <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 shadow-xl backdrop-blur-sm">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs font-semibold mb-2">
               <Type className="w-3.5 h-3.5" />
-              Sessione Dedicata Scritte & Tipografia 3D
+              Sessione Dedicata Scritte &amp; Tipografia 3D
             </div>
             <h2 className="text-2xl font-bold text-white tracking-tight flex items-center gap-2.5">
               Come si Fanno le Scritte in Puro HTML + CSS
               <span className="text-xs px-2.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-medium">
-                Codice Sempre Visibile
+                Codice Corrispondente al 100%
               </span>
             </h2>
             <p className="text-sm text-slate-400 mt-1 max-w-2xl">
-              Scopri passo per passo i segreti tipografici: estrusioni multi-ombra 3D, riflessi lucidi con pseudo-elementi, gradienti arcobaleno animati e cuoricini vettoriali sulle lettere.
+              Ogni selettore modifica istantaneamente sia il rendering grafico che il codice puro sottostante (HTML + CSS): estrusioni a strati 3D, riflessi lucidi, cuoricini vettoriali e gradienti olografici.
             </p>
           </div>
 
@@ -485,7 +223,7 @@ ${bgDot === 'heart' ? `/* IL PUNTINO SULLA 'I' TRASFORMATO IN CUORICINO 3D */
             }`}
           >
             <Heart className="w-4 h-4 text-rose-500" />
-            1. Titolo 3D & Cuore sulla &apos;I&apos;
+            1. Titolo 3D &amp; Cuore sulla &apos;I&apos;
           </button>
 
           <button
@@ -560,7 +298,7 @@ ${bgDot === 'heart' ? `/* IL PUNTINO SULLA 'I' TRASFORMATO IN CUORICINO 3D */
                     Estrusione 3D a Strati
                   </div>
                   <p className="text-slate-400 leading-relaxed">
-                    Si usa la proprietà <strong className="text-slate-200 font-mono">text-shadow</strong> sovrapponendo da 4 a 6 ombre distanziate di 1px verso il basso con tonalità progressivamente più scure.
+                    Si usa la proprietà <strong className="text-slate-200 font-mono">text-shadow</strong> sovrapponendo da 4 a 8 ombre distanziate di 1px verso il basso con tonalità coordinate al colore di ogni lettera.
                   </p>
                 </div>
 
@@ -594,7 +332,7 @@ ${bgDot === 'heart' ? `/* IL PUNTINO SULLA 'I' TRASFORMATO IN CUORICINO 3D */
                     Gradiente sul Testo
                   </div>
                   <p className="text-slate-400 leading-relaxed">
-                    Il gradiente a 7 colori orizzontali è tagliato sulla forma dei caratteri usando <strong className="text-slate-200 font-mono">-webkit-background-clip: text</strong> e <strong className="text-slate-200 font-mono">-webkit-text-fill-color: transparent</strong>.
+                    Il gradiente orizzontale continuo è tagliato sul testo usando <strong className="text-slate-200 font-mono">-webkit-background-clip: text</strong> e <strong className="text-slate-200 font-mono">-webkit-text-fill-color: transparent</strong>.
                   </p>
                 </div>
 
@@ -604,7 +342,7 @@ ${bgDot === 'heart' ? `/* IL PUNTINO SULLA 'I' TRASFORMATO IN CUORICINO 3D */
                     Animazione Continua 200%
                   </div>
                   <p className="text-slate-400 leading-relaxed">
-                    Con <strong className="text-slate-200 font-mono">background-size: 200%</strong> la sfumatura scorre dolcemente all&apos;infinito tramite <strong className="text-slate-200 font-mono">@keyframes liveRainbowShift</strong> muovendo la posizione orizzontale.
+                    Con <strong className="text-slate-200 font-mono">background-size: 200% auto</strong> la sfumatura scorre dolcemente all&apos;infinito tramite <strong className="text-slate-200 font-mono">@keyframes liveRainbowShift</strong>.
                   </p>
                 </div>
 
@@ -730,7 +468,7 @@ ${bgDot === 'heart' ? `/* IL PUNTINO SULLA 'I' TRASFORMATO IN CUORICINO 3D */
 
             <div className="absolute top-3 left-4 text-[11px] font-mono font-semibold uppercase text-slate-400 tracking-wider flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              Anteprima Live Renderizzata in Tempo Reale
+              Anteprima Live Renderizzata con le Regole CSS Generate
             </div>
 
             {/* CONTENUTO VISIVO DELLA SCRITTA IN BASE ALLA SEZIONE */}
@@ -739,38 +477,29 @@ ${bgDot === 'heart' ? `/* IL PUNTINO SULLA 'I' TRASFORMATO IN CUORICINO 3D */
               {/* SEZIONE: BUONGIORNO */}
               {activeSection === 'buongiorno' && (
                 <div className="flex flex-col items-center gap-2">
-                  <div className="flex items-center justify-center gap-1.5 flex-wrap">
-                    {/* Cuoricino sinistro 3D */}
+                  <div className="live-buongiorno-wrapper">
                     <div className="live-heart-3d h-top-l shrink-0"><div className="live-heart-specular" /></div>
 
-                    {/* Lettere renderizzate dinamicamente con i selettori attivi */}
-                    {customBgText.split('').map((char, idx) => {
-                      if (char.toUpperCase() === 'I' && bgDot === 'heart') {
+                    {(customBgText || 'BUONGIORNO').split('').map((char, idx) => {
+                      if (char === ' ') {
+                        return <span key={idx} className="live-letter-space" style={{ display: 'inline-block', width: 14 }} />;
+                      }
+
+                      const upper = char.toUpperCase();
+                      if (upper === 'I' && bgDot === 'heart') {
                         return (
-                          <div key={idx} className="live-let-i-container mx-0.5">
+                          <div key={idx} className={`live-let-i-container let-dyn-${idx}`}>
                             <div className="live-heart-on-i" />
-                            <span 
-                              className="live-let-i-stem"
-                              style={{
-                                textShadow: getBuongiornoShadow(),
-                              }}
-                            >
-                              I
-                            </span>
+                            <span className="live-let-i-stem">{char}</span>
                           </div>
                         );
                       }
 
-                      if (char.toUpperCase() === 'I' && bgDot === 'star') {
+                      if (upper === 'I' && bgDot === 'star') {
                         return (
-                          <div key={idx} className="live-let-i-container mx-0.5">
-                            <div className="live-sparkle s-md" style={{ position: 'absolute', top: 0 }} />
-                            <span 
-                              className="live-let-i-stem"
-                              style={{ textShadow: getBuongiornoShadow() }}
-                            >
-                              I
-                            </span>
+                          <div key={idx} className={`live-let-i-container let-dyn-${idx}`}>
+                            <div className="live-star-on-i">✦</div>
+                            <span className="live-let-i-stem">{char}</span>
                           </div>
                         );
                       }
@@ -779,23 +508,17 @@ ${bgDot === 'heart' ? `/* IL PUNTINO SULLA 'I' TRASFORMATO IN CUORICINO 3D */
                         <span
                           key={idx}
                           data-letter={char}
-                          className={`live-letter-3d ${getThemeColorClass(idx)}`}
-                          style={{
-                            textShadow: getBuongiornoShadow(),
-                            animationPlayState: bgAnim === 'none' ? 'paused' : 'running',
-                            animationName: bgAnim === 'bounce' ? 'liveLetterBounce' : bgAnim === 'float' ? 'liveFloatGentle' : 'none',
-                          }}
+                          className={`live-letter-3d let-dyn-${idx}`}
                         >
                           {char}
                         </span>
                       );
                     })}
 
-                    {/* Cuoricino destro 3D */}
                     <div className="live-heart-3d h-top-r shrink-0"><div className="live-heart-specular" /></div>
                   </div>
                   <div className="text-[11px] text-slate-400 font-mono mt-3">
-                    Stile attivo: <span className="text-amber-400 font-semibold">{bgTheme}</span> • Profondità: <span className="text-amber-400 font-semibold">{bgDepth}</span> • Puntino: <span className="text-amber-400 font-semibold">{bgDot}</span>
+                    Tema: <span className="text-amber-400 font-semibold">{bgTheme}</span> • Profondità: <span className="text-amber-400 font-semibold">{bgDepth}</span> • Puntino: <span className="text-amber-400 font-semibold">{bgDot}</span>
                   </div>
                 </div>
               )}
@@ -803,25 +526,13 @@ ${bgDot === 'heart' ? `/* IL PUNTINO SULLA 'I' TRASFORMATO IN CUORICINO 3D */
               {/* SEZIONE: BUON SABATO */}
               {activeSection === 'sabato' && (
                 <div className="flex flex-col items-center gap-3">
-                  <div className="flex items-center gap-3">
+                  <div className="live-subtitle-wrapper">
                     <div className="live-sparkle s-md" />
-                    <h2
-                      className="live-sabato-text"
-                      style={{
-                        background: getSabatoGradientCss(),
-                        backgroundSize: '200% auto',
-                        WebkitBackgroundClip: 'text',
-                        WebkitTextFillColor: 'transparent',
-                        filter: getSabatoFilterCss(),
-                        animationPlayState: sabatoAnim ? 'running' : 'paused',
-                      }}
-                    >
-                      {customSabatoText}
-                    </h2>
+                    <h2 className="live-sabato-text">{customSabatoText}</h2>
                     <div className="live-sparkle s-md" />
                   </div>
                   <div className="text-[11px] text-slate-400 font-mono mt-2">
-                    Gradiente: <span className="text-amber-400 font-semibold">{sabatoGrad}</span> • Contorno: <span className="text-amber-400 font-semibold">{sabatoOut}</span> • Animazione: <span className="text-amber-400 font-semibold">{sabatoAnim ? 'Attiva' : 'Pausa'}</span>
+                    Gradiente: <span className="text-amber-400 font-semibold">{sabatoGrad}</span> • Effetto: <span className="text-amber-400 font-semibold">{sabatoOut}</span> • Animazione: <span className="text-amber-400 font-semibold">{sabatoAnim ? 'Attiva' : 'Pausa'}</span>
                   </div>
                 </div>
               )}
@@ -829,22 +540,13 @@ ${bgDot === 'heart' ? `/* IL PUNTINO SULLA 'I' TRASFORMATO IN CUORICINO 3D */
               {/* SEZIONE: DATA */}
               {activeSection === 'data' && (
                 <div className="flex flex-col items-center gap-3">
-                  <div className="flex items-center gap-3">
-                    {dateSparkles && <div className="live-sparkle s-md" />}
-                    <span
-                      className="live-date-text"
-                      style={{
-                        letterSpacing: dateSpacing === 'normal' ? '0.04em' : dateSpacing === 'wide' ? '0.08em' : '0.16em',
-                        color: dateSty === 'goldFoil' ? '#b45309' : dateSty === 'roseGold' ? '#9f1239' : '#1a2536',
-                        textShadow: getDateShadowCss(),
-                      }}
-                    >
-                      {customDateText}
-                    </span>
-                    {dateSparkles && <div className="live-sparkle s-md" />}
+                  <div className="live-date-row">
+                    {dateSparkles && <div className="live-sparkle s-md sp-tl1" />}
+                    <span className="live-date-text">{customDateText}</span>
+                    {dateSparkles && <div className="live-sparkle s-md sp-tr1" />}
                   </div>
                   <div className="text-[11px] text-slate-400 font-mono mt-2">
-                    Incisione: <span className="text-amber-400 font-semibold">{dateSty}</span> • Spaziatura: <span className="text-amber-400 font-semibold">{dateSpacing}</span>
+                    Stile Incisione: <span className="text-amber-400 font-semibold">{dateSty}</span> • Stelline: <span className="text-amber-400 font-semibold">{dateSparkles ? 'Attive' : 'Disattivate'}</span>
                   </div>
                 </div>
               )}
@@ -852,83 +554,53 @@ ${bgDot === 'heart' ? `/* IL PUNTINO SULLA 'I' TRASFORMATO IN CUORICINO 3D */
               {/* SEZIONE: FIRMA */}
               {activeSection === 'firma' && (
                 <div className="flex flex-col items-center gap-3">
-                  <div className="flex items-center gap-3">
-                    <div className="live-sparkle s-md" />
-                    <span
-                      className="live-my-angel"
-                      style={{
-                        fontFamily: `'${sigFont}', cursive`,
-                        color: sigColor === 'ruby' ? '#991b1b' : sigColor === 'amberGold' ? '#b45309' : sigColor === 'choco' ? '#3d1400' : '#1a2536',
-                        textShadow: sigRelief ? '0 1px 0 #ffffff, 1px 2px 3px rgba(0, 0, 0, 0.2)' : '0 2px 4px rgba(0,0,0,0.15)',
-                      }}
-                    >
-                      {customSigText}
-                    </span>
+                  <div className="live-footer-row" style={{ justifyContent: 'center', paddingLeft: 0 }}>
+                    <div className="live-sparkle s-md sp-bl" />
+                    <span className="live-my-angel">{customSigText}</span>
                   </div>
                   <div className="text-[11px] text-slate-400 font-mono mt-2">
-                    Font: <span className="text-amber-400 font-semibold">{sigFont}</span> • Inchiostro: <span className="text-amber-400 font-semibold">{sigColor}</span>
+                    Font: <span className="text-amber-400 font-semibold">{sigFont}</span> • Inchiostro: <span className="text-amber-400 font-semibold">{sigColor}</span> • Rilievo: <span className="text-amber-400 font-semibold">{sigRelief ? 'Attivo' : 'Piatto'}</span>
                   </div>
                 </div>
               )}
 
               {/* SEZIONE: TUTTE LE SCRITTE INSIEME */}
               {activeSection === 'all' && (
-                <div className="w-full max-w-md bg-[#fff9ed] p-6 rounded-2xl shadow-xl border border-amber-900/20 flex flex-col items-center gap-3 text-slate-950">
-                  {/* Data */}
-                  <span
-                    className="live-date-text"
-                    style={{ fontSize: 26, textShadow: getDateShadowCss() }}
-                  >
-                    {customDateText}
-                  </span>
-
-                  {/* Buongiorno */}
-                  <div className="flex items-center justify-center gap-1 my-1">
-                    <div className="live-heart-3d h-top-l shrink-0" style={{ transform: 'scale(0.8) rotate(-45deg)' }}><div className="live-heart-specular" /></div>
-                    <span className="text-3xl font-black font-['Lilita_One'] tracking-wide text-[#0d6efd]" style={{ textShadow: getBuongiornoShadow() }}>B</span>
-                    <span className="text-3xl font-black font-['Lilita_One'] tracking-wide text-[#dc2626]" style={{ textShadow: getBuongiornoShadow() }}>U</span>
-                    <span className="text-3xl font-black font-['Lilita_One'] tracking-wide text-[#ea580c]" style={{ textShadow: getBuongiornoShadow() }}>O</span>
-                    <span className="text-3xl font-black font-['Lilita_One'] tracking-wide text-[#eab308]" style={{ textShadow: getBuongiornoShadow() }}>N</span>
-                    <span className="text-3xl font-black font-['Lilita_One'] tracking-wide text-[#16a34a]" style={{ textShadow: getBuongiornoShadow() }}>G</span>
-                    <div className="live-let-i-container" style={{ width: 16, height: 40 }}>
-                      <div className="live-heart-on-i" style={{ width: 12, height: 12, top: 0 }} />
-                      <span className="live-let-i-stem" style={{ fontSize: 36, textShadow: getBuongiornoShadow() }}>I</span>
-                    </div>
-                    <span className="text-3xl font-black font-['Lilita_One'] tracking-wide text-[#65a30d]" style={{ textShadow: getBuongiornoShadow() }}>O</span>
-                    <span className="text-3xl font-black font-['Lilita_One'] tracking-wide text-[#0284c7]" style={{ textShadow: getBuongiornoShadow() }}>R</span>
-                    <span className="text-3xl font-black font-['Lilita_One'] tracking-wide text-[#9333ea]" style={{ textShadow: getBuongiornoShadow() }}>N</span>
-                    <span className="text-3xl font-black font-['Lilita_One'] tracking-wide text-[#059669]" style={{ textShadow: getBuongiornoShadow() }}>O</span>
-                    <div className="live-heart-3d h-top-r shrink-0" style={{ transform: 'scale(0.8) rotate(-45deg)' }}><div className="live-heart-specular" /></div>
+                <div className="w-full max-w-md bg-[#fff9ed] p-6 rounded-2xl shadow-xl border border-amber-900/20 flex flex-col items-center gap-2 text-slate-950">
+                  <div className="live-date-row">
+                    {dateSparkles && <div className="live-sparkle s-sm sp-tl1" />}
+                    <span className="live-date-text" style={{ fontSize: 16 }}>{customDateText}</span>
+                    {dateSparkles && <div className="live-sparkle s-sm sp-tr1" />}
                   </div>
 
-                  {/* Sottotitolo */}
-                  <h2
-                    className="live-sabato-text"
-                    style={{
-                      fontSize: 30,
-                      background: getSabatoGradientCss(),
-                      backgroundSize: '200% auto',
-                      WebkitBackgroundClip: 'text',
-                      WebkitTextFillColor: 'transparent',
-                      filter: getSabatoFilterCss(),
-                    }}
-                  >
-                    {customSabatoText}
-                  </h2>
+                  <div className="live-buongiorno-wrapper" style={{ transform: 'scale(0.85)', transformOrigin: 'center' }}>
+                    <div className="live-heart-3d h-top-l shrink-0"><div className="live-heart-specular" /></div>
+                    {(customBgText || 'BUONGIORNO').split('').map((char, idx) => {
+                      if (char === ' ') return <span key={idx} style={{ display: 'inline-block', width: 8 }} />;
+                      if (char.toUpperCase() === 'I' && bgDot === 'heart') {
+                        return (
+                          <div key={idx} className={`live-let-i-container let-dyn-${idx}`}>
+                            <div className="live-heart-on-i" />
+                            <span className="live-let-i-stem">{char}</span>
+                          </div>
+                        );
+                      }
+                      return (
+                        <span key={idx} data-letter={char} className={`live-letter-3d let-dyn-${idx}`}>
+                          {char}
+                        </span>
+                      );
+                    })}
+                    <div className="live-heart-3d h-top-r shrink-0"><div className="live-heart-specular" /></div>
+                  </div>
 
-                  {/* Firma */}
-                  <div className="w-full flex justify-start pl-4 mt-2">
-                    <span
-                      className="live-my-angel"
-                      style={{
-                        fontSize: 28,
-                        fontFamily: `'${sigFont}', cursive`,
-                        color: '#1a2536',
-                        textShadow: '0 1px 0 #ffffff, 1px 2px 3px rgba(0, 0, 0, 0.2)',
-                      }}
-                    >
-                      {customSigText}
-                    </span>
+                  <div className="live-subtitle-wrapper" style={{ transform: 'scale(0.85)', transformOrigin: 'center' }}>
+                    <h2 className="live-sabato-text">{customSabatoText}</h2>
+                  </div>
+
+                  <div className="live-footer-row" style={{ marginTop: 6, paddingLeft: 12 }}>
+                    <div className="live-sparkle s-sm sp-bl" />
+                    <span className="live-my-angel" style={{ fontSize: 32 }}>{customSigText}</span>
                   </div>
                 </div>
               )}
@@ -1048,15 +720,15 @@ ${bgDot === 'heart' ? `/* IL PUNTINO SULLA 'I' TRASFORMATO IN CUORICINO 3D */
                   </label>
                   <div className="grid grid-cols-2 gap-2 text-xs">
                     {[
-                      { id: 'multicolor', label: 'Multicolore Joyful (Originale)' },
-                      { id: 'liquidGold', label: 'Oro Liquido & Champagne' },
+                      { id: 'multicolor', label: 'Multicolore Zaffiro/Smeraldo' },
+                      { id: 'liquidGold', label: 'Oro Liquido Fuso' },
                       { id: 'candyPink', label: 'Rosa Fragola & Candy' },
-                      { id: 'cyberNeon', label: 'Cyber Neon Fluo' },
-                      { id: 'oceanBreeze', label: 'Oceano & Cobalto' },
+                      { id: 'cyberNeon', label: 'Ciano Neon / Smeraldo' },
+                      { id: 'oceanBreeze', label: 'Brezza Oceano / Blu' },
                     ].map(theme => (
                       <button
                         key={theme.id}
-                        onClick={() => setBgTheme(theme.id as BuongiornoColorTheme)}
+                        onClick={() => setBgTheme(theme.id as TitleTheme)}
                         className={`p-2 rounded-xl border text-left transition-all cursor-pointer ${
                           bgTheme === theme.id
                             ? 'bg-amber-500/20 border-amber-500/40 text-amber-300 font-semibold'
@@ -1077,13 +749,13 @@ ${bgDot === 'heart' ? `/* IL PUNTINO SULLA 'I' TRASFORMATO IN CUORICINO 3D */
                   <div className="grid grid-cols-2 gap-2 text-xs">
                     {[
                       { id: 'flat', label: 'Piatto 2D (0 ombre)' },
-                      { id: 'light', label: 'Morbido (2 strati)' },
-                      { id: 'standard', label: 'Completo (6 strati standard)' },
-                      { id: 'mega', label: 'Mega 3D (8 strati profondi)' },
+                      { id: 'light', label: 'Luce Morbida (2 strati)' },
+                      { id: 'standard', label: 'Standard (6 strati standard)' },
+                      { id: 'mega', label: 'Mega 3D Extra Profondo (8 strati)' },
                     ].map(dep => (
                       <button
                         key={dep.id}
-                        onClick={() => setBgDepth(dep.id as Depth3D)}
+                        onClick={() => setBgDepth(dep.id as TitleDepth)}
                         className={`p-2 rounded-xl border text-left transition-all cursor-pointer ${
                           bgDepth === dep.id
                             ? 'bg-amber-500/20 border-amber-500/40 text-amber-300 font-semibold'
@@ -1108,7 +780,7 @@ ${bgDot === 'heart' ? `/* IL PUNTINO SULLA 'I' TRASFORMATO IN CUORICINO 3D */
                     ].map(dot => (
                       <button
                         key={dot.id}
-                        onClick={() => setBgDot(dot.id as DotStyle)}
+                        onClick={() => setBgDot(dot.id as TitleDot)}
                         className={`p-2 rounded-xl border text-left transition-all cursor-pointer ${
                           bgDot === dot.id
                             ? 'bg-amber-500/20 border-amber-500/40 text-amber-300 font-semibold'
@@ -1134,7 +806,7 @@ ${bgDot === 'heart' ? `/* IL PUNTINO SULLA 'I' TRASFORMATO IN CUORICINO 3D */
                     ].map(an => (
                       <button
                         key={an.id}
-                        onClick={() => setBgAnim(an.id as LetterAnimation)}
+                        onClick={() => setBgAnim(an.id as TitleAnim)}
                         className={`p-2 rounded-xl border text-center transition-all cursor-pointer ${
                           bgAnim === an.id
                             ? 'bg-amber-500/20 border-amber-500/40 text-amber-300 font-semibold'
@@ -1170,15 +842,15 @@ ${bgDot === 'heart' ? `/* IL PUNTINO SULLA 'I' TRASFORMATO IN CUORICINO 3D */
                   </label>
                   <div className="grid grid-cols-2 gap-2 text-xs">
                     {[
-                      { id: 'rainbow', label: '🌈 Arcobaleno Olografico' },
-                      { id: 'sunset', label: '🌅 Tramonto Solare' },
-                      { id: 'glitzPink', label: '🌸 Rosa Glitz & Fucsia' },
-                      { id: 'aurora', label: '🌌 Aurora Boreale' },
-                      { id: 'goldSolar', label: '☀️ Oro & Ambra Radiosa' },
+                      { id: 'rainbow', label: '🌈 Arcobaleno Olografico 7 Colori' },
+                      { id: 'sunset', label: '🌅 Tramonto Solare Corallo' },
+                      { id: 'pink', label: '🌸 Rosa Fluo & Fucsia' },
+                      { id: 'aurora', label: '🌌 Aurora Boreale Ciano/Viola' },
+                      { id: 'gold', label: '☀️ Oro & Ambra Radiosa' },
                     ].map(grad => (
                       <button
                         key={grad.id}
-                        onClick={() => setSabatoGrad(grad.id as SabatoGradient)}
+                        onClick={() => setSabatoGrad(grad.id as SubtitleGradient)}
                         className={`p-2 rounded-xl border text-left transition-all cursor-pointer ${
                           sabatoGrad === grad.id
                             ? 'bg-amber-500/20 border-amber-500/40 text-amber-300 font-semibold'
@@ -1193,18 +865,18 @@ ${bgDot === 'heart' ? `/* IL PUNTINO SULLA 'I' TRASFORMATO IN CUORICINO 3D */
 
                 <div>
                   <label className="text-[11px] font-semibold text-slate-300 mb-1.5 block">
-                    Effetto Contorno & Bordo 3D:
+                    Effetto Contorno &amp; Bordo 3D:
                   </label>
                   <div className="grid grid-cols-2 gap-2 text-xs">
                     {[
-                      { id: 'crispWhite', label: 'Bordo Bianco + Ombra 3D' },
-                      { id: 'neonGlow', label: 'Bagliore Neon Fluo' },
-                      { id: 'dark3D', label: 'Contorno Scuro 3D Netto' },
-                      { id: 'subtleShadow', label: 'Solo Ombra Sfumata' },
+                      { id: 'glow-white', label: 'Bordo Bianco + Ombra 3D' },
+                      { id: 'neon-border', label: 'Bagliore Neon Fluo Ciano' },
+                      { id: 'dark-outline', label: 'Contorno Scuro 3D Netto' },
+                      { id: 'soft-shadow', label: 'Solo Ombra Sfumata' },
                     ].map(out => (
                       <button
                         key={out.id}
-                        onClick={() => setSabatoOut(out.id as SabatoOutline)}
+                        onClick={() => setSabatoOut(out.id as SubtitleEffect)}
                         className={`p-2 rounded-xl border text-left transition-all cursor-pointer ${
                           sabatoOut === out.id
                             ? 'bg-amber-500/20 border-amber-500/40 text-amber-300 font-semibold'
@@ -1230,7 +902,7 @@ ${bgDot === 'heart' ? `/* IL PUNTINO SULLA 'I' TRASFORMATO IN CUORICINO 3D */
                     }`}
                   >
                     <span>Stato Animazione:</span>
-                    <span>{sabatoAnim ? '▶ In Esecuzione (8s)' : '⏸ In Pausa'}</span>
+                    <span>{sabatoAnim ? '▶ In Esecuzione (6s)' : '⏸ In Pausa'}</span>
                   </button>
                 </div>
               </div>
@@ -1257,10 +929,10 @@ ${bgDot === 'heart' ? `/* IL PUNTINO SULLA 'I' TRASFORMATO IN CUORICINO 3D */
                   </label>
                   <div className="grid grid-cols-2 gap-2 text-xs">
                     {[
-                      { id: 'carved', label: 'Incisione Lapidea Classica' },
-                      { id: 'goldFoil', label: 'Timbro in Foglia d&apos;Oro' },
-                      { id: 'slateModern', label: 'Grafite Notte Moderna' },
-                      { id: 'roseGold', label: 'Oro Rosa Romantico' },
+                      { id: 'stone', label: 'Incisione Lapidea Classica' },
+                      { id: 'gold', label: 'Timbro in Foglia d&apos;Oro' },
+                      { id: 'minimal', label: 'Grafite Notte Moderna' },
+                      { id: 'rosegold', label: 'Oro Rosa Romantico' },
                     ].map(sty => (
                       <button
                         key={sty.id}
@@ -1272,31 +944,6 @@ ${bgDot === 'heart' ? `/* IL PUNTINO SULLA 'I' TRASFORMATO IN CUORICINO 3D */
                         }`}
                       >
                         {sty.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div>
-                  <label className="text-[11px] font-semibold text-slate-300 mb-1.5 block">
-                    Spaziatura Caratteri (letter-spacing):
-                  </label>
-                  <div className="grid grid-cols-3 gap-2 text-xs">
-                    {[
-                      { id: 'normal', label: 'Compatta' },
-                      { id: 'wide', label: 'Elegante' },
-                      { id: 'ultra', label: 'Monumentale' },
-                    ].map(sp => (
-                      <button
-                        key={sp.id}
-                        onClick={() => setDateSpacing(sp.id as 'normal' | 'wide' | 'ultra')}
-                        className={`p-2 rounded-xl border text-center transition-all cursor-pointer ${
-                          dateSpacing === sp.id
-                            ? 'bg-amber-500/20 border-amber-500/40 text-amber-300 font-semibold'
-                            : 'bg-slate-950/80 border-slate-800 text-slate-400 hover:text-slate-200'
-                        }`}
-                      >
-                        {sp.label}
                       </button>
                     ))}
                   </div>
@@ -1339,10 +986,10 @@ ${bgDot === 'heart' ? `/* IL PUNTINO SULLA 'I' TRASFORMATO IN CUORICINO 3D */
                   </label>
                   <div className="grid grid-cols-2 gap-2 text-xs">
                     {[
-                      { id: 'Great Vibes', label: 'Great Vibes (Elegante)' },
-                      { id: 'Pacifico', label: 'Pacifico (Morbido Pop)' },
-                      { id: 'Sacramento', label: 'Sacramento (Delicato)' },
-                      { id: 'Dancing Script', label: 'Dancing Script (Spensierato)' },
+                      { id: 'greatvibes', label: 'Great Vibes (Elegante)' },
+                      { id: 'pacifico', label: 'Pacifico (Morbido Pop)' },
+                      { id: 'sacramento', label: 'Sacramento (Delicato)' },
+                      { id: 'dancingscript', label: 'Dancing Script (Spensierato)' },
                     ].map(f => (
                       <button
                         key={f.id}
@@ -1365,14 +1012,14 @@ ${bgDot === 'heart' ? `/* IL PUNTINO SULLA 'I' TRASFORMATO IN CUORICINO 3D */
                   </label>
                   <div className="grid grid-cols-2 gap-2 text-xs">
                     {[
-                      { id: 'navy', label: 'Inchiostro Notte (#1a2536)' },
+                      { id: 'night', label: 'Inchiostro Notte (#1e293b)' },
                       { id: 'ruby', label: 'Rosso Passione Rubino' },
-                      { id: 'amberGold', label: 'Oro Ambrato Antico' },
+                      { id: 'gold', label: 'Oro Ambrato Antico' },
                       { id: 'choco', label: 'Cioccolato Intenso' },
                     ].map(c => (
                       <button
                         key={c.id}
-                        onClick={() => setSigColor(c.id as 'navy' | 'ruby' | 'amberGold' | 'choco')}
+                        onClick={() => setSigColor(c.id as SignatureColor)}
                         className={`p-2 rounded-xl border text-left transition-all cursor-pointer ${
                           sigColor === c.id
                             ? 'bg-amber-500/20 border-amber-500/40 text-amber-300 font-semibold'
@@ -1408,7 +1055,7 @@ ${bgDot === 'heart' ? `/* IL PUNTINO SULLA 'I' TRASFORMATO IN CUORICINO 3D */
                   Questa vista d&apos;insieme mostra l&apos;equilibrio armonico tra tutti e 4 gli strati tipografici contemporaneamente.
                 </p>
                 <div className="p-3 bg-slate-950 rounded-xl border border-slate-800 space-y-2">
-                  <div className="text-amber-400 font-semibold">Testi attualmente caricati:</div>
+                  <div className="text-amber-400 font-semibold">Testi attualmente configurati:</div>
                   <div className="grid grid-cols-2 gap-2 text-[11px] text-slate-300">
                     <div>Data: <span className="font-mono text-white">{customDateText}</span></div>
                     <div>Titolo: <span className="font-mono text-white">{customBgText}</span></div>

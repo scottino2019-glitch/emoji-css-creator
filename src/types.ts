@@ -10,11 +10,41 @@ export interface CardVariantConfig {
   companion: CompanionObjectVariant;
 }
 
+export type TitleTheme = 'multicolor' | 'liquidGold' | 'candyPink' | 'cyberNeon' | 'oceanBreeze';
+export type TitleDepth = 'flat' | 'light' | 'standard' | 'mega';
+export type TitleDot = 'heart' | 'star' | 'classic';
+export type TitleAnim = 'bounce' | 'float' | 'none';
+
+export type SubtitleGradient = 'rainbow' | 'sunset' | 'pink' | 'aurora' | 'gold';
+export type SubtitleEffect = 'glow-white' | 'neon-border' | 'dark-outline' | 'soft-shadow';
+
+export type DateStyle = 'stone' | 'gold' | 'minimal' | 'rosegold';
+export type SignatureFont = 'greatvibes' | 'pacifico' | 'sacramento' | 'dancingscript';
+export type SignatureColor = 'night' | 'ruby' | 'gold' | 'choco';
+
 export interface CardTextConfig {
   date: string;
   buongiorno: string;
   subGreeting: string;
   signature: string;
+
+  // Personalizzazioni tipografiche create nel laboratorio scritte
+  titleTheme?: TitleTheme;
+  titleDepth?: TitleDepth;
+  titleSpecular?: boolean;
+  titleDot?: TitleDot;
+  titleAnim?: TitleAnim;
+
+  subtitleGradient?: SubtitleGradient;
+  subtitleEffect?: SubtitleEffect;
+  subtitleAnim?: boolean;
+
+  dateStyle?: DateStyle;
+  dateStars?: boolean;
+
+  sigFont?: SignatureFont;
+  sigColor?: SignatureColor;
+  sigEmboss?: boolean;
 }
 
 export interface LayerVisibility {

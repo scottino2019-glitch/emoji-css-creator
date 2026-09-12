@@ -27,7 +27,7 @@ export const CardArt: React.FC<CardArtProps> = ({
   burstKissKey = 0,
   burstSteamKey = 0,
 }) => {
-  const css = generateCardCss(anim, variants);
+  const css = generateCardCss(anim, variants, texts);
 
   return (
     <div
@@ -48,15 +48,15 @@ export const CardArt: React.FC<CardArtProps> = ({
         {/* 1. DATA PERSONALIZZABILE */}
         {layers.texts && (
           <div className="live-date-row">
-            {layers.sparkles && <div className="live-sparkle s-md sp-tl1" />}
-            {layers.sparkles && <div className="live-sparkle s-sm sp-tl2" />}
+            {layers.sparkles && texts.dateStars !== false && <div className="live-sparkle s-md sp-tl1" />}
+            {layers.sparkles && texts.dateStars !== false && <div className="live-sparkle s-sm sp-tl2" />}
             <span className="live-date-text">{texts.date}</span>
-            {layers.sparkles && <div className="live-sparkle s-md sp-tr1" />}
-            {layers.sparkles && <div className="live-sparkle s-sm sp-tr2" />}
+            {layers.sparkles && texts.dateStars !== false && <div className="live-sparkle s-md sp-tr1" />}
+            {layers.sparkles && texts.dateStars !== false && <div className="live-sparkle s-sm sp-tr2" />}
           </div>
         )}
 
-        {/* 2. TITOLO 3D "BUONGIORNO" CON CUORE SULLA I */}
+        {/* 2. TITOLO 3D DINAMICO CON CUORE O STELLA SULLA I */}
         {layers.texts && (
           <div className="live-buongiorno-wrapper">
             {layers.hearts && (
@@ -65,22 +65,41 @@ export const CardArt: React.FC<CardArtProps> = ({
               </div>
             )}
 
-            <span className="live-letter-3d let-b" data-letter="B">B</span>
-            <span className="live-letter-3d let-u" data-letter="U">U</span>
-            <span className="live-letter-3d let-o1" data-letter="O">O</span>
-            <span className="live-letter-3d let-n1" data-letter="N">N</span>
-            <span className="live-letter-3d let-g" data-letter="G">G</span>
+            {(texts.buongiorno || 'BUONGIORNO').split('').map((char, index) => {
+              if (char === ' ') {
+                return <span key={index} style={{ display: 'inline-block', width: '14px' }} />;
+              }
+              const upper = char.toUpperCase();
+              const dot = texts.titleDot ?? 'heart';
 
-            {/* Lettera I animata con Cuore al posto del puntino */}
-            <div className="live-let-i-container">
-              <div className="live-heart-on-i" />
-              <span className="live-let-i-stem">I</span>
-            </div>
+              if (upper === 'I' && dot === 'heart') {
+                return (
+                  <div key={index} className={`live-let-i-container let-dyn-${index}`}>
+                    <div className="live-heart-on-i" />
+                    <span className="live-let-i-stem">{char}</span>
+                  </div>
+                );
+              }
 
-            <span className="live-letter-3d let-o2" data-letter="O">O</span>
-            <span className="live-letter-3d let-r" data-letter="R">R</span>
-            <span className="live-letter-3d let-n2" data-letter="N">N</span>
-            <span className="live-letter-3d let-o3" data-letter="O">O</span>
+              if (upper === 'I' && dot === 'star') {
+                return (
+                  <div key={index} className={`live-let-i-container let-dyn-${index}`}>
+                    <div className="live-star-on-i">✦</div>
+                    <span className="live-let-i-stem">{char}</span>
+                  </div>
+                );
+              }
+
+              return (
+                <span
+                  key={index}
+                  className={`live-letter-3d let-dyn-${index}`}
+                  data-letter={char}
+                >
+                  {char}
+                </span>
+              );
+            })}
 
             {layers.hearts && (
               <div className="live-heart-3d h-top-r">

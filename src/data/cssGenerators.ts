@@ -1,11 +1,22 @@
-import { CardVariantConfig, AnimationSettings } from '../types';
+import { CardVariantConfig, AnimationSettings, CardTextConfig } from '../types';
+import { generateTypographyCss } from './typographyGenerators';
 
 export function generateCardCss(
   anim: AnimationSettings = { isPlaying: true, speed: 1 },
-  _variants?: CardVariantConfig
+  _variants?: CardVariantConfig,
+  texts?: CardTextConfig
 ): string {
   const speedFactor = (1 / anim.speed).toFixed(2);
   const playState = anim.isPlaying ? 'running' : 'paused';
+
+  const defaultTexts: CardTextConfig = {
+    date: '12 SETTEMBRE',
+    buongiorno: 'BUONGIORNO',
+    subGreeting: 'BUON SABATO',
+    signature: 'My angel',
+  };
+  const activeTexts = texts ?? defaultTexts;
+  const typographyCss = generateTypographyCss(activeTexts, anim);
 
   return `
     /* ==========================================================================
@@ -56,224 +67,7 @@ export function generateCardCss(
       z-index: 0;
     }
 
-    /* 1. DATA */
-    .live-date-row {
-      position: relative;
-      z-index: 5;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      margin-bottom: 8px;
-      width: 100%;
-    }
-
-    .live-date-text {
-      font-family: 'Cinzel', 'Playfair Display', serif;
-      font-size: 34px;
-      font-weight: 900;
-      letter-spacing: 0.08em;
-      color: #1a2536;
-      text-transform: uppercase;
-      text-shadow: 
-        0 1px 0 #ffffff,
-        0 -1px 0 rgba(0, 0, 0, 0.2),
-        1px 2px 3px rgba(0, 0, 0, 0.25),
-        0 4px 10px rgba(26, 37, 54, 0.15);
-    }
-
-    /* 2. TITOLO 3D BUONGIORNO */
-    .live-buongiorno-wrapper {
-      position: relative;
-      z-index: 6;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 1.5px;
-      margin-bottom: 4px;
-      width: 100%;
-      padding: 4px 0;
-    }
-
-    .live-letter-3d {
-      position: relative;
-      display: inline-block;
-      font-family: 'Lilita One', 'Fredoka', cursive, sans-serif;
-      font-size: 56px;
-      font-weight: 900;
-      line-height: 1;
-      text-align: center;
-      transform-style: preserve-3d;
-      animation: liveLetterBounce calc(3.6s * var(--speed-factor)) ease-in-out infinite var(--play-state);
-      cursor: default;
-      transition: transform 0.2s ease;
-    }
-
-    .live-letter-3d:hover {
-      transform: translateY(-6px) scale(1.1) rotate(2deg);
-    }
-
-    .live-letter-3d::before {
-      content: attr(data-letter);
-      position: absolute;
-      inset: 0;
-      z-index: 1;
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-
-    .live-letter-3d::after {
-      content: attr(data-letter);
-      position: absolute;
-      top: 0;
-      left: 0;
-      z-index: 2;
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.35) 25%, transparent 55%);
-      pointer-events: none;
-    }
-
-    .let-b {
-      color: #0d6efd;
-      text-shadow: 0 1px 0 #3b8bfd, 0 2px 0 #257afd, 0 3px 0 #0d65e9, 0 4px 0 #084ebd, 0 5px 0 #053b94, 0 6px 10px rgba(5,59,148,0.5), 2px 8px 14px rgba(0,0,0,0.3);
-      animation-delay: 0.0s;
-    }
-    .let-b::before { background-image: linear-gradient(170deg, #60a5fa 0%, #2563eb 45%, #1d4ed8 100%); }
-
-    .let-u {
-      color: #dc2626;
-      text-shadow: 0 1px 0 #f87171, 0 2px 0 #ef4444, 0 3px 0 #dc2626, 0 4px 0 #b91c1c, 0 5px 0 #991b1b, 0 6px 10px rgba(153,27,27,0.5), 2px 8px 14px rgba(0,0,0,0.3);
-      animation-delay: 0.15s;
-    }
-    .let-u::before { background-image: linear-gradient(170deg, #fca5a5 0%, #ef4444 40%, #b91c1c 100%); }
-
-    .let-o1 {
-      color: #ea580c;
-      text-shadow: 0 1px 0 #fb923c, 0 2px 0 #f97316, 0 3px 0 #ea580c, 0 4px 0 #c2410c, 0 5px 0 #9a3412, 0 6px 10px rgba(154,52,18,0.5), 2px 8px 14px rgba(0,0,0,0.3);
-      animation-delay: 0.3s;
-    }
-    .let-o1::before { background-image: linear-gradient(170deg, #fdba74 0%, #f97316 45%, #c2410c 100%); }
-
-    .let-n1 {
-      color: #eab308;
-      text-shadow: 0 1px 0 #fde047, 0 2px 0 #facc15, 0 3px 0 #eab308, 0 4px 0 #ca8a04, 0 5px 0 #a16207, 0 6px 10px rgba(161,98,7,0.45), 2px 8px 14px rgba(0,0,0,0.25);
-      animation-delay: 0.45s;
-    }
-    .let-n1::before { background-image: linear-gradient(170deg, #fef08a 0%, #eab308 50%, #ca8a04 100%); }
-
-    .let-g {
-      color: #16a34a;
-      text-shadow: 0 1px 0 #4ade80, 0 2px 0 #22c55e, 0 3px 0 #16a34a, 0 4px 0 #15803d, 0 5px 0 #166534, 0 6px 10px rgba(22,101,52,0.5), 2px 8px 14px rgba(0,0,0,0.3);
-      animation-delay: 0.6s;
-    }
-    .let-g::before { background-image: linear-gradient(170deg, #86efac 0%, #22c55e 45%, #15803d 100%); }
-
-    .live-let-i-container {
-      position: relative;
-      display: inline-flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: flex-end;
-      width: 22px;
-      height: 60px;
-      animation: liveLetterBounce calc(3.6s * var(--speed-factor)) ease-in-out infinite var(--play-state);
-      animation-delay: 0.75s;
-    }
-
-    .live-heart-on-i {
-      position: absolute;
-      top: -2px;
-      width: 16px;
-      height: 16px;
-      background: radial-gradient(circle at 35% 35%, #ffffff 0%, #ff3b5c 30%, #e60026 60%, #990014 100%);
-      transform: rotate(-45deg);
-      border-radius: 2px;
-      box-shadow: 0 2px 6px rgba(180, 0, 20, 0.5);
-      z-index: 10;
-      animation: liveHeartPulse calc(1.8s * var(--speed-factor)) ease-in-out infinite var(--play-state);
-    }
-    .live-heart-on-i::before, .live-heart-on-i::after {
-      content: '';
-      position: absolute;
-      width: 16px;
-      height: 16px;
-      background: inherit;
-      border-radius: 50%;
-      box-shadow: inherit;
-    }
-    .live-heart-on-i::before { top: -8px; left: 0; }
-    .live-heart-on-i::after { top: 0; right: -8px; }
-
-    .live-let-i-stem {
-      font-family: 'Lilita One', 'Fredoka', cursive, sans-serif;
-      font-size: 56px;
-      font-weight: 900;
-      line-height: 1;
-      color: #eab308;
-      text-shadow: 0 1px 0 #fde047, 0 2px 0 #facc15, 0 3px 0 #eab308, 0 4px 0 #ca8a04, 0 5px 0 #a16207, 0 6px 10px rgba(161,98,7,0.45);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-image: linear-gradient(170deg, #fef08a 0%, #eab308 50%, #ca8a04 100%);
-    }
-
-    .let-o2 {
-      color: #65a30d;
-      text-shadow: 0 1px 0 #a3e635, 0 2px 0 #84cc16, 0 3px 0 #65a30d, 0 4px 0 #4d7c0f, 0 5px 0 #365314, 0 6px 10px rgba(54,83,20,0.5);
-      animation-delay: 0.9s;
-    }
-    .let-o2::before { background-image: linear-gradient(170deg, #bef264 0%, #84cc16 45%, #4d7c0f 100%); }
-
-    .let-r {
-      color: #0284c7;
-      text-shadow: 0 1px 0 #38bdf8, 0 2px 0 #0ea5e9, 0 3px 0 #0284c7, 0 4px 0 #0369a1, 0 5px 0 #075985, 0 6px 10px rgba(7,89,133,0.5);
-      animation-delay: 1.05s;
-    }
-    .let-r::before { background-image: linear-gradient(170deg, #7dd3fc 0%, #0ea5e9 45%, #0369a1 100%); }
-
-    .let-n2 {
-      color: #9333ea;
-      text-shadow: 0 1px 0 #c084fc, 0 2px 0 #a855f7, 0 3px 0 #9333ea, 0 4px 0 #7e22ce, 0 5px 0 #6b21a8, 0 6px 10px rgba(107,33,168,0.5);
-      animation-delay: 1.2s;
-    }
-    .let-n2::before { background-image: linear-gradient(170deg, #e9d5ff 0%, #a855f7 45%, #7e22ce 100%); }
-
-    .let-o3 {
-      color: #059669;
-      text-shadow: 0 1px 0 #34d399, 0 2px 0 #10b981, 0 3px 0 #059669, 0 4px 0 #047857, 0 5px 0 #065f46, 0 6px 10px rgba(6,95,70,0.5);
-      animation-delay: 1.35s;
-    }
-    .let-o3::before { background-image: linear-gradient(170deg, #6ee7b7 0%, #10b981 45%, #047857 100%); }
-
-    /* 3. SOTTOTITOLO BUON SABATO */
-    .live-subtitle-wrapper {
-      position: relative;
-      z-index: 6;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 12px;
-      margin-bottom: 12px;
-    }
-
-    .live-sabato-text {
-      font-family: 'Lilita One', 'Fredoka', cursive, sans-serif;
-      font-size: 42px;
-      font-weight: 900;
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
-      background: linear-gradient(90deg, #ff1744 0%, #ff6d00 18%, #ffd600 36%, #00e676 54%, #00b0ff 72%, #d500f9 90%, #ff1744 100%);
-      background-size: 200% auto;
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      animation: liveRainbowShift calc(8s * var(--speed-factor)) linear infinite var(--play-state);
-      filter: 
-        drop-shadow(0 0 1px #ffffff)
-        drop-shadow(0 0 2px #ffffff)
-        drop-shadow(0 2px 0 #152542)
-        drop-shadow(0 3px 0 #0f1c32)
-        drop-shadow(0 5px 8px rgba(0, 0, 0, 0.35));
-    }
+    ${typographyCss}
 
     /* 4. PALCO DEI PERSONAGGI */
     .live-stage-characters {
@@ -1792,13 +1586,6 @@ export function generateCardCss(
       padding-left: 20px;
       margin-top: 2px;
       gap: 8px;
-    }
-    .live-my-angel {
-      font-family: 'Great Vibes', cursive;
-      font-size: 40px;
-      font-weight: 700;
-      color: #1a2536;
-      text-shadow: 0 1px 0 #ffffff, 1px 2px 3px rgba(0, 0, 0, 0.2);
     }
 
     /* KEYFRAMES */
