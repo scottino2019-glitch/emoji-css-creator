@@ -22,6 +22,7 @@ import {
   generateDateCss,
   generateSignatureCss,
   generateTypographyCss,
+  generateSingleTextStandaloneHtml,
 } from '../data/typographyGenerators';
 import {
   Type,
@@ -37,6 +38,7 @@ import {
   CheckCircle2,
   Zap,
   LayoutGrid,
+  Download,
 } from 'lucide-react';
 
 interface TypographyWorkshopProps {
@@ -134,10 +136,10 @@ export const TypographyWorkshop: React.FC<TypographyWorkshopProps> = ({
   const subtitleCssCode = generateSubtitleCss(activeConfig, anim);
   const subtitleHtmlCode = generateSubtitleHtml(activeConfig);
 
-  const dateCssCode = generateDateCss(activeConfig);
+  const dateCssCode = generateDateCss(activeConfig, anim);
   const dateHtmlCode = generateDateHtml(activeConfig);
 
-  const signatureCssCode = generateSignatureCss(activeConfig);
+  const signatureCssCode = generateSignatureCss(activeConfig, anim);
   const signatureHtmlCode = generateSignatureHtml(activeConfig);
 
   const allTypographyCss = generateTypographyCss(activeConfig, anim);
@@ -160,11 +162,36 @@ export const TypographyWorkshop: React.FC<TypographyWorkshopProps> = ({
     currentHtmlSnippet = `<!-- STRUTTURA TIPOGRAFICA COMPLETA -->\n${allTypographyHtml}`;
   }
 
+  const currentStandaloneHtml = generateSingleTextStandaloneHtml(activeSection, activeConfig, anim);
+
   const activeSnippet = codeTab === 'css'
     ? currentCssSnippet
     : codeTab === 'html'
     ? currentHtmlSnippet
-    : `<style>\n${currentCssSnippet}\n</style>\n\n${currentHtmlSnippet}`;
+    : currentStandaloneHtml;
+
+  const handleDownloadSingleHtml = () => {
+    const htmlContent = generateSingleTextStandaloneHtml(activeSection, activeConfig, anim);
+    const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    const baseName = activeSection === 'buongiorno'
+      ? `scritta-3d-${(customBgText || 'buongiorno').toLowerCase().replace(/[^a-z0-9]+/g, '-')}`
+      : activeSection === 'sabato'
+      ? `scritta-arcobaleno-${(customSabatoText || 'buon-sabato').toLowerCase().replace(/[^a-z0-9]+/g, '-')}`
+      : activeSection === 'data'
+      ? `scritta-data-${(customDateText || 'data').toLowerCase().replace(/[^a-z0-9]+/g, '-')}`
+      : activeSection === 'firma'
+      ? `scritta-firma-${(customSigText || 'firma').toLowerCase().replace(/[^a-z0-9]+/g, '-')}`
+      : `tutte-le-scritte-tipografia`;
+    link.download = `${baseName}.html`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    handleCopy('download-single', '');
+  };
 
   return (
     <div className="w-full max-w-6xl mx-auto flex flex-col gap-6">
@@ -655,9 +682,24 @@ export const TypographyWorkshop: React.FC<TypographyWorkshopProps> = ({
                       ? 'bg-emerald-600 text-white'
                       : 'bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700'
                   }`}
+                  title="Copia il codice selezionato negli appunti"
                 >
                   {copiedKey === 'snippet' ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
                   <span>{copiedKey === 'snippet' ? 'Copiato!' : 'Copia'}</span>
+                </button>
+
+                {/* PULSANTE DEDICATO ESPORTA FILE HTML COMPLETO DELLA SCRITTA SINGOLA */}
+                <button
+                  onClick={handleDownloadSingleHtml}
+                  className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer ${
+                    copiedKey === 'download-single'
+                      ? 'bg-emerald-600 text-white shadow-sm'
+                      : 'bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 shadow-sm active:scale-95'
+                  }`}
+                  title="Scarica direttamente il file HTML completo con tutte le animazioni attive"
+                >
+                  {copiedKey === 'download-single' ? <Check className="w-3 h-3 text-white" /> : <Download className="w-3 h-3" />}
+                  <span>{copiedKey === 'download-single' ? 'Scaricato!' : 'Esporta File HTML'}</span>
                 </button>
               </div>
             </div>
@@ -1074,14 +1116,23 @@ export const TypographyWorkshop: React.FC<TypographyWorkshopProps> = ({
               </div>
             )}
 
-            {/* PULSANTE COPIA RAPIDA DELL'INTERO BLOCCO CODICE */}
-            <div className="pt-2 border-t border-slate-800/80">
+            {/* PULSANTE COPIA RAPIDA DELL'INTERO BLOCCO CODICE E DOWNLOAD FILE AUTONOMO */}
+            <div className="pt-2 border-t border-slate-800/80 flex flex-col gap-2">
               <button
                 onClick={() => handleCopy('css-direct', currentCssSnippet)}
                 className="w-full py-2 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 transition-colors cursor-pointer flex items-center justify-center gap-1.5"
               >
                 {copiedKey === 'css-direct' ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4 text-amber-400" />}
                 <span>{copiedKey === 'css-direct' ? 'Copiato negli appunti!' : 'Copia Solo il Blocco CSS'}</span>
+              </button>
+
+              <button
+                onClick={handleDownloadSingleHtml}
+                className="w-full py-2 px-3 rounded-xl bg-gradient-to-r from-amber-500/20 to-orange-500/20 hover:from-amber-500/30 hover:to-orange-500/30 text-amber-300 text-xs font-semibold border border-amber-500/40 transition-colors cursor-pointer flex items-center justify-center gap-1.5"
+                title="Esporta il file HTML della singola scritta con animazione perfettamente attiva"
+              >
+                {copiedKey === 'download-single' ? <Check className="w-4 h-4 text-emerald-400" /> : <Download className="w-4 h-4 text-amber-400" />}
+                <span>{copiedKey === 'download-single' ? 'File HTML Scaricato!' : 'Scarica File HTML con Animazione'}</span>
               </button>
             </div>
           </div>

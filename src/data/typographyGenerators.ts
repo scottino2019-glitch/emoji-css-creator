@@ -221,8 +221,12 @@ export function generateSignatureHtml(texts: CardTextConfig): string {
 }
 
 // Helper per CSS della Data
-export function generateDateCss(texts: CardTextConfig): string {
+export function generateDateCss(texts: CardTextConfig, anim?: AnimationSettings): string {
   const dateSt = texts.dateStyle ?? 'stone';
+  const speedFactor = (1 / (anim?.speed || 1)).toFixed(2);
+  const playState = anim?.isPlaying !== false ? 'running' : 'paused';
+  const hasStars = texts.dateStars !== false;
+
   let dateColor = '#e2e8f0';
   let dateShadow = '0 1px 0 #ffffff, 0 -1px 0 rgba(0,0,0,0.7), 0 2px 4px rgba(0,0,0,0.5)';
   if (dateSt === 'gold') {
@@ -236,7 +240,58 @@ export function generateDateCss(texts: CardTextConfig): string {
     dateShadow = '0 1px 0 #fff, 0 2px 4px rgba(190,18,60,0.6)';
   }
 
-  return `    /* 1. DATA SUPERIORE */
+  const sparkleCss = hasStars ? `
+    /* Stelline decorative scintillanti per la Data */
+    .live-sparkle {
+      position: relative;
+      display: inline-block;
+      animation: liveStarTwinkle calc(2.4s * var(--speed-factor, 1)) ease-in-out infinite var(--play-state, running);
+    }
+    .live-sparkle::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 100%;
+      height: 100%;
+      transform: translate(-50%, -50%);
+      background: radial-gradient(circle, #ffffff 15%, #ffd700 45%, #ff9900 70%, transparent 80%);
+      clip-path: polygon(50% 0%, 63% 37%, 100% 50%, 63% 63%, 50% 100%, 37% 63%, 0% 50%, 37% 37%);
+      filter: drop-shadow(0 0 5px rgba(255, 215, 0, 0.85));
+    }
+    .live-sparkle::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 60%;
+      height: 60%;
+      transform: translate(-50%, -50%) rotate(45deg);
+      background: radial-gradient(circle, #ffffff 30%, #ffeaa7 70%, transparent 85%);
+      clip-path: polygon(50% 0%, 63% 37%, 100% 50%, 63% 63%, 50% 100%, 37% 63%, 0% 50%, 37% 37%);
+    }
+    .s-md { width: 20px; height: 20px; }
+    .s-sm { width: 15px; height: 15px; }
+    .sp-tl1 { animation-delay: 0.2s !important; }
+    .sp-tl2 { animation-delay: 0.9s !important; }
+    .sp-tr1 { animation-delay: 0.5s !important; }
+    .sp-tr2 { animation-delay: 1.2s !important; }
+
+    @keyframes liveStarTwinkle {
+      0%, 100% { transform: scale(1) rotate(0deg); opacity: 0.9; }
+      50% { transform: scale(1.25) rotate(15deg); opacity: 1; }
+    }` : '';
+
+  return `    /* ==========================================
+       1. DATA SUPERIORE IN BASSORILIEVO SCOLPITO
+       ========================================== */
+    @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&display=swap');
+
+    :root, .live-date-row {
+      --speed-factor: ${speedFactor};
+      --play-state: ${playState};
+    }
+
     .live-date-row {
       position: relative;
       z-index: 5;
@@ -255,7 +310,8 @@ export function generateDateCss(texts: CardTextConfig): string {
       color: ${dateColor};
       text-transform: uppercase;
       text-shadow: ${dateShadow};
-    }`;
+    }
+${sparkleCss}`;
 }
 
 // Helper per CSS del Titolo 3D
@@ -267,9 +323,12 @@ export function generateTitleCss(texts: CardTextConfig, anim?: AnimationSettings
   const specular = texts.titleSpecular !== false;
   const animType = texts.titleAnim ?? 'bounce';
 
-  let letterAnimProp = 'animation: liveLetterBounce calc(3.6s * var(--speed-factor)) ease-in-out infinite var(--play-state);';
+  const speedFactor = (1 / (anim?.speed || 1)).toFixed(2);
+  const playState = anim?.isPlaying !== false ? 'running' : 'paused';
+
+  let letterAnimProp = 'animation: liveLetterBounce calc(3.6s * var(--speed-factor, 1)) ease-in-out infinite var(--play-state, running);';
   if (animType === 'float') {
-    letterAnimProp = 'animation: liveFloatGentle calc(3.0s * var(--speed-factor)) ease-in-out infinite var(--play-state);';
+    letterAnimProp = 'animation: liveFloatGentle calc(3.0s * var(--speed-factor, 1)) ease-in-out infinite var(--play-state, running);';
   } else if (animType === 'none') {
     letterAnimProp = 'animation: none;';
   }
@@ -295,7 +354,16 @@ export function generateTitleCss(texts: CardTextConfig, anim?: AnimationSettings
     }`;
   }).filter(Boolean).join('\n\n');
 
-  return `    /* 2. TITOLO 3D "${word}" */
+  return `    /* ==========================================
+       2. TITOLO 3D DINAMICO "${word}"
+       ========================================== */
+    @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@700;900&family=Lilita+One&display=swap');
+
+    :root, .live-buongiorno-wrapper {
+      --speed-factor: ${speedFactor};
+      --play-state: ${playState};
+    }
+
     .live-buongiorno-wrapper {
       position: relative;
       z-index: 8;
@@ -380,7 +448,7 @@ export function generateTitleCss(texts: CardTextConfig, anim?: AnimationSettings
       border-radius: 2px;
       box-shadow: 0 2px 6px rgba(180, 0, 20, 0.5);
       z-index: 10;
-      animation: liveHeartPulse calc(1.8s * var(--speed-factor)) ease-in-out infinite var(--play-state);
+      animation: liveHeartPulse calc(1.8s * var(--speed-factor, 1)) ease-in-out infinite var(--play-state, running);
     }
     .live-heart-on-i::before, .live-heart-on-i::after {
       content: '';
@@ -400,8 +468,67 @@ export function generateTitleCss(texts: CardTextConfig, anim?: AnimationSettings
       font-size: 20px;
       color: #fef08a;
       text-shadow: 0 0 8px #f59e0b, 0 0 16px #fbbf24;
-      animation: liveSparkleSpin calc(2.4s * var(--speed-factor)) ease-in-out infinite var(--play-state);
+      animation: liveSparkleSpin calc(2.4s * var(--speed-factor, 1)) ease-in-out infinite var(--play-state, running);
       z-index: 10;
+    }
+
+    /* CUORI LATERALI 3D FLUTTUANTI */
+    .live-heart-3d {
+      position: relative;
+      display: inline-block;
+      background: radial-gradient(circle at 35% 35%, #ffffff 0%, #ff3366 30%, #d6002f 65%, #800018 100%);
+      transform: rotate(-45deg);
+      border-radius: 2px;
+      box-shadow: 
+        inset 1px 1px 3px rgba(255, 255, 255, 0.7),
+        inset -1px -2px 3px rgba(80, 0, 10, 0.4),
+        0 4px 10px rgba(180, 0, 20, 0.35);
+      animation: liveFloatGentle calc(3s * var(--speed-factor, 1)) ease-in-out infinite var(--play-state, running);
+    }
+    .live-heart-3d::before, .live-heart-3d::after {
+      content: '';
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      background: inherit;
+      border-radius: 50%;
+      box-shadow: inherit;
+    }
+    .live-heart-3d::before { top: -50%; left: 0; }
+    .live-heart-3d::after { top: 0; right: -50%; }
+
+    .live-heart-specular {
+      position: absolute;
+      top: -25%;
+      left: 10%;
+      width: 35%;
+      height: 45%;
+      background: radial-gradient(circle, rgba(255, 255, 255, 0.85) 0%, transparent 80%);
+      border-radius: 50%;
+      transform: rotate(25deg);
+      z-index: 2;
+    }
+
+    .h-top-l { width: 24px; height: 24px; animation-delay: 0.2s !important; }
+    .h-top-r { width: 26px; height: 26px; animation-delay: 0.7s !important; }
+
+    /* REGOLE DI ANIMAZIONE (KEYFRAMES AUTONOMI) */
+    @keyframes liveLetterBounce {
+      0%, 100% { transform: translateY(0) rotate(0deg); }
+      50% { transform: translateY(-4px) rotate(1deg); }
+    }
+    @keyframes liveFloatGentle {
+      0%, 100% { transform: rotate(-45deg) translateY(0); }
+      50% { transform: rotate(-45deg) translateY(-6px); }
+    }
+    @keyframes liveHeartPulse {
+      0%, 100% { transform: rotate(-45deg) scale(1); }
+      50% { transform: rotate(-45deg) scale(1.14); }
+    }
+    @keyframes liveSparkleSpin {
+      0% { transform: rotate(0deg) scale(1); }
+      50% { transform: rotate(180deg) scale(1.2); }
+      100% { transform: rotate(360deg) scale(1); }
     }
 
 ${letterRules}`;
@@ -412,6 +539,9 @@ export function generateSubtitleCss(texts: CardTextConfig, anim?: AnimationSetti
   const subGrad = texts.subtitleGradient ?? 'rainbow';
   const subFx = texts.subtitleEffect ?? 'glow-white';
   const subAnim = texts.subtitleAnim !== false;
+
+  const speedFactor = (1 / (anim?.speed || 1)).toFixed(2);
+  const playState = anim?.isPlaying !== false ? 'running' : 'paused';
 
   let subBgGrad = 'linear-gradient(90deg, #ff1493, #ff4500, #ff8c00, #ffd700, #00ff7f, #00bfff, #9932cc, #ff1493)';
   if (subGrad === 'sunset') {
@@ -433,7 +563,16 @@ export function generateSubtitleCss(texts: CardTextConfig, anim?: AnimationSetti
     subFilter = 'drop-shadow(0 4px 8px rgba(0,0,0,0.6))';
   }
 
-  return `    /* 3. SOTTOTITOLO "${texts.subGreeting || 'BUON SABATO'}" */
+  return `    /* ==========================================
+       3. SOTTOTITOLO OLOGRAFICO ARCOBALENO "${texts.subGreeting || 'BUON SABATO'}"
+       ========================================== */
+    @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@700;900&family=Lilita+One&display=swap');
+
+    :root, .live-subtitle-wrapper {
+      --speed-factor: ${speedFactor};
+      --play-state: ${playState};
+    }
+
     .live-subtitle-wrapper {
       position: relative;
       z-index: 6;
@@ -455,15 +594,62 @@ export function generateSubtitleCss(texts: CardTextConfig, anim?: AnimationSetti
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       filter: ${subFilter};
-      ${subAnim ? 'animation: liveRainbowShift calc(6s * var(--speed-factor)) linear infinite var(--play-state);' : '/* Animazione arcobaleno disattivata */'}
+      ${subAnim ? 'animation: liveRainbowShift calc(6s * var(--speed-factor, 1)) linear infinite var(--play-state, running);' : '/* Animazione arcobaleno disattivata */'}
+    }
+
+    /* Stelline decorative scintillanti per il Sottotitolo */
+    .live-sparkle {
+      position: relative;
+      display: inline-block;
+      animation: liveStarTwinkle calc(2.4s * var(--speed-factor, 1)) ease-in-out infinite var(--play-state, running);
+    }
+    .live-sparkle::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 100%;
+      height: 100%;
+      transform: translate(-50%, -50%);
+      background: radial-gradient(circle, #ffffff 15%, #ffd700 45%, #ff9900 70%, transparent 80%);
+      clip-path: polygon(50% 0%, 63% 37%, 100% 50%, 63% 63%, 50% 100%, 37% 63%, 0% 50%, 37% 37%);
+      filter: drop-shadow(0 0 5px rgba(255, 215, 0, 0.85));
+    }
+    .live-sparkle::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 60%;
+      height: 60%;
+      transform: translate(-50%, -50%) rotate(45deg);
+      background: radial-gradient(circle, #ffffff 30%, #ffeaa7 70%, transparent 85%);
+      clip-path: polygon(50% 0%, 63% 37%, 100% 50%, 63% 63%, 50% 100%, 37% 63%, 0% 50%, 37% 37%);
+    }
+    .s-md { width: 20px; height: 20px; }
+    .s-sm { width: 15px; height: 15px; }
+    .sp-ml1 { animation-delay: 0.3s !important; }
+    .sp-bc { animation-delay: 1.4s !important; }
+
+    /* KEYFRAMES AUTONOMI */
+    @keyframes liveRainbowShift {
+      0% { background-position: 0% 50%; }
+      100% { background-position: 200% 50%; }
+    }
+    @keyframes liveStarTwinkle {
+      0%, 100% { transform: scale(1) rotate(0deg); opacity: 0.9; }
+      50% { transform: scale(1.25) rotate(15deg); opacity: 1; }
     }`;
 }
 
 // Helper per CSS della Firma
-export function generateSignatureCss(texts: CardTextConfig): string {
+export function generateSignatureCss(texts: CardTextConfig, anim?: AnimationSettings): string {
   const sigF = texts.sigFont ?? 'greatvibes';
   const sigC = texts.sigColor ?? 'night';
   const sigEmb = texts.sigEmboss !== false;
+
+  const speedFactor = (1 / (anim?.speed || 1)).toFixed(2);
+  const playState = anim?.isPlaying !== false ? 'running' : 'paused';
 
   let sigFontFamily = "'Great Vibes', cursive, sans-serif";
   if (sigF === 'pacifico') sigFontFamily = "'Pacifico', cursive, sans-serif";
@@ -477,7 +663,16 @@ export function generateSignatureCss(texts: CardTextConfig): string {
 
   const sigShadow = sigEmb ? '0 1px 0 rgba(255, 255, 255, 0.8), 1px 2px 3px rgba(0, 0, 0, 0.2)' : 'none';
 
-  return `    /* 4. FIRMA CORSIVA "${texts.signature || 'My angel'}" */
+  return `    /* ==========================================
+       4. FIRMA CORSIVA AUTOGRAFA "${texts.signature || 'My angel'}"
+       ========================================== */
+    @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Great+Vibes&family=Pacifico&family=Sacramento&display=swap');
+
+    :root, .live-footer-row, .live-signature-box {
+      --speed-factor: ${speedFactor};
+      --play-state: ${playState};
+    }
+
     .live-footer-row, .live-signature-box {
       position: relative;
       z-index: 15;
@@ -498,25 +693,71 @@ export function generateSignatureCss(texts: CardTextConfig): string {
       text-shadow: ${sigShadow};
       display: inline-block;
       user-select: none;
+    }
+
+    /* Stellina scintillante per la firma */
+    .live-sparkle {
+      position: relative;
+      display: inline-block;
+      animation: liveStarTwinkle calc(2.4s * var(--speed-factor, 1)) ease-in-out infinite var(--play-state, running);
+    }
+    .live-sparkle::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 100%;
+      height: 100%;
+      transform: translate(-50%, -50%);
+      background: radial-gradient(circle, #ffffff 15%, #ffd700 45%, #ff9900 70%, transparent 80%);
+      clip-path: polygon(50% 0%, 63% 37%, 100% 50%, 63% 63%, 50% 100%, 37% 63%, 0% 50%, 37% 37%);
+      filter: drop-shadow(0 0 5px rgba(255, 215, 0, 0.85));
+    }
+    .live-sparkle::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 60%;
+      height: 60%;
+      transform: translate(-50%, -50%) rotate(45deg);
+      background: radial-gradient(circle, #ffffff 30%, #ffeaa7 70%, transparent 85%);
+      clip-path: polygon(50% 0%, 63% 37%, 100% 50%, 63% 63%, 50% 100%, 37% 63%, 0% 50%, 37% 37%);
+    }
+    .s-md { width: 20px; height: 20px; }
+    .sp-bl { animation-delay: 0.7s !important; }
+
+    @keyframes liveStarTwinkle {
+      0%, 100% { transform: scale(1) rotate(0deg); opacity: 0.9; }
+      50% { transform: scale(1.25) rotate(15deg); opacity: 1; }
     }`;
 }
 
-// 5. GENERAZIONE COMPLETA DEL CSS PER LE SCRITTE (RIGOROSO E CONDIVISO AL 100%)
+// 5. GENERAZIONE COMPLETA DEL CSS PER TUTTE LE SCRITTE CON KEYFRAMES AUTONOMI
 export function generateTypographyCss(texts: CardTextConfig, anim?: AnimationSettings): string {
   const word = (texts.buongiorno || 'BUONGIORNO').trim();
   const theme = texts.titleTheme ?? 'multicolor';
   const depth = texts.titleDepth ?? 'standard';
   const dot = texts.titleDot ?? 'heart';
 
-  const dateCss = generateDateCss(texts);
+  const speedFactor = (1 / (anim?.speed || 1)).toFixed(2);
+  const playState = anim?.isPlaying !== false ? 'running' : 'paused';
+
+  const dateCss = generateDateCss(texts, anim);
   const titleCss = generateTitleCss(texts, anim);
   const subtitleCss = generateSubtitleCss(texts, anim);
-  const signatureCss = generateSignatureCss(texts);
+  const signatureCss = generateSignatureCss(texts, anim);
 
   return `    /* ==========================================================================
-       SESSIONE SCRITTE E TIPOGRAFIA 3D (GENERATA PER: "${word}")
+       SESSIONE SCRITTE E TIPOGRAFIA 3D COMPLETA (GENERATA PER: "${word}")
        Tema: ${theme} | Estrusione 3D: ${depth} | Puntino 'I': ${dot}
        ========================================================================== */
+    @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Dancing+Script:wght@700&family=Fredoka:wght@700;900&family=Great+Vibes&family=Lilita+One&family=Pacifico&family=Sacramento&display=swap');
+
+    :root, .live-card, .card-canvas {
+      --speed-factor: ${speedFactor};
+      --play-state: ${playState};
+    }
 
 ${dateCss}
 
@@ -545,4 +786,115 @@ ${signatureCss}
     .let-n2::before { background-image: linear-gradient(170deg, #e9d5ff 0%, #a855f7 45%, #7e22ce 100%); }
     .let-o3 { color: #059669; animation-delay: 1.35s !important; }
     .let-o3::before { background-image: linear-gradient(170deg, #6ee7b7 0%, #10b981 45%, #047857 100%); }`;
+}
+
+// 6. GENERAZIONE FILE HTML AUTONOMO E INDIPENDENTE PER LA SINGOLA SCRITTA
+export function generateSingleTextStandaloneHtml(
+  section: 'buongiorno' | 'sabato' | 'data' | 'firma' | 'all',
+  texts: CardTextConfig,
+  anim?: AnimationSettings
+): string {
+  const activeAnim: AnimationSettings = anim ?? { isPlaying: true, speed: 1 };
+  
+  let sectionTitle = 'Titolo 3D - ' + (texts.buongiorno || 'BUONGIORNO');
+  let sectionCss = generateTitleCss(texts, activeAnim);
+  let sectionHtml = generateTitleHtml(texts);
+
+  if (section === 'sabato') {
+    sectionTitle = 'Sottotitolo Arcobaleno - ' + (texts.subGreeting || 'BUON SABATO');
+    sectionCss = generateSubtitleCss(texts, activeAnim);
+    sectionHtml = generateSubtitleHtml(texts);
+  } else if (section === 'data') {
+    sectionTitle = 'Data Bassorilievo - ' + (texts.date || '12 SETTEMBRE');
+    sectionCss = generateDateCss(texts, activeAnim);
+    sectionHtml = generateDateHtml(texts);
+  } else if (section === 'firma') {
+    sectionTitle = 'Firma Calligrafica - ' + (texts.signature || 'My angel');
+    sectionCss = generateSignatureCss(texts, activeAnim);
+    sectionHtml = generateSignatureHtml(texts);
+  } else if (section === 'all') {
+    sectionTitle = 'Tipografia Completa';
+    sectionCss = generateTypographyCss(texts, activeAnim);
+    sectionHtml = `${generateDateHtml(texts)}\n\n${generateTitleHtml(texts)}\n\n${generateSubtitleHtml(texts)}\n\n${generateSignatureHtml(texts)}`;
+  }
+
+  return `<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${sectionTitle} - Scritta HTML+CSS con Animazione</title>
+  
+  <!-- Font Google Web -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Dancing+Script:wght@700&family=Fredoka:wght@700;900&family=Great+Vibes&family=Lilita+One&family=Pacifico&family=Sacramento&display=swap" rel="stylesheet">
+
+  <style>
+    /* RESET DI BASE E AMBIENTE DI ANTEPRIMA */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      background: radial-gradient(ellipse at 50% 40%, #1e1e28 0%, #111116 100%);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      padding: 24px;
+      overflow-x: hidden;
+    }
+
+    /* CONTENITORE CENTRATO CON SFONDO CARTOLINA */
+    .preview-stage {
+      position: relative;
+      width: 100%;
+      max-width: 560px;
+      padding: 36px 28px;
+      background: radial-gradient(ellipse at 50% 35%, #ffffff 0%, #fffdf8 45%, #f7f1e5 85%, #ede3d1 100%);
+      border-radius: 28px;
+      box-shadow: 
+        0 25px 60px -15px rgba(0, 0, 0, 0.5),
+        0 10px 25px -5px rgba(0, 0, 0, 0.3),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.9);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+    }
+
+    .badge-info {
+      position: fixed;
+      bottom: 16px;
+      padding: 8px 16px;
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 9999px;
+      color: #fbbf24;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+    }
+
+${sectionCss}
+  </style>
+</head>
+<body>
+
+  <!-- PALCO DI ANTEPRIMA AUTONOMO CON TUTTE LE ANIMAZIONI ATTIVE -->
+  <main class="preview-stage">
+${sectionHtml}
+  </main>
+
+  <div class="badge-info">✨ Scritta con animazione autonoma al 100% conservata in esportazione</div>
+
+</body>
+</html>`;
 }
